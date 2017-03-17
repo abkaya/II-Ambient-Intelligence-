@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 ldr.py
 Display analog data from Arduino using Python (matplotlib)
@@ -52,7 +53,8 @@ class AnalogPlot:
               a1.set_data(range(self.maxLen), self.ay)
       except KeyboardInterrupt:
           print('exiting')
-      
+      except ValueError:
+          print ("value error") 
       return a0, 
 
   # clean up
