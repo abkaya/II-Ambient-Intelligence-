@@ -1,6 +1,6 @@
 # II-Ambient-Intelligence-
-
-Openhab
+## General info
+#### Openhab
 
   -mqtt  
     Services toevoegen: 
@@ -23,9 +23,21 @@ Openhab
       pi@raspberrypi:~ $ sudo systemctl status openhab
 
 
-MEMS-sensor
+#### MEMS-sensor
 
  -Raspberry
     Build en run: /home/pi/rpi-mems-sensor/test.c
     gcc -o tempProg test.c libmemssensor.a -l bcm2835 
     sudo ./tempProg
+    
+## Project folders: 
+#### Nucleo-project	
+Dash7, USART, Interrupts and GPIO	
+
+#### airQuality-nucleo-l152-i2c-usart
+Eclipse project for the air quality sensor.
+Readouts are not yet interrupt based
+output formate:
+CO2-data TVOC-data
+
+#### barometer
