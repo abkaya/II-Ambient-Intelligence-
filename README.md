@@ -36,8 +36,11 @@ Dash7, USART, Interrupts and GPIO
 
 #### airQuality-nucleo-l152-i2c-usart
 Eclipse project for the air quality sensor.
+
 Readouts are not yet interrupt based
-output formate:
+
+output format:
+
 CO2-data TVOC-data
 
 #### barometer
