@@ -47,8 +47,8 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-uint8_t AIRQ_Initialized = 0;
 /* Private variables ---------------------------------------------------------*/
+uint8_t AIRQ_Initialized = 0;
 
 /* USER CODE END PV */
 
@@ -58,6 +58,15 @@ void Error_Handler(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
+
+/* USER CODE BEGIN PFP */
+/* Private function prototypes -----------------------------------------------*/
+
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -81,7 +90,6 @@ static void MX_USART2_UART_Init(void);
  SCL = A5
  WAKE = D5 - Optional, can be left unconnected
  */
-
 #define CCS811_ADDR 0x5B //7-bit unshifted default I2C Address
 
 #define WAKE 13 //!Wake on breakout connected to pin 5 on Arduino
@@ -161,10 +169,15 @@ void configureCCS811(uint8_t* buf) {
 				HAL_MAX_DELAY);
 
 	//Adjust the measurement mode, using a mask.
+	//DRIVE_MODE : a measurement is performed every second
+	//INTERRUPT : The nINT signal is asserted (driven low) when a new sample is ready in
+	//ALG_RESULT_DATA. The nINT signal will stop being driven low when
+	//ALG_RESULT_DATA is read on the I
+	//2C interface.
 	//Make sure to pass the buffer pointer and the buffer size, so memory reallocation is done accordingly
 	AIRQ_READ_REGISTER(buf, CSS811_MEAS_MODE, 1);
-	buf[0] &= 0b10001111;
-	buf[0] |= 0b00010000;
+	buf[0] &= 0b10000111;
+	buf[0] |= 0b00011000;
 	AIRQ_WRITE_REGISTER(CSS811_MEAS_MODE, buf[0]);
 
 	HAL_UART_Transmit(&huart2, (uint8_t*) "Init successful \r\n",
@@ -172,9 +185,17 @@ void configureCCS811(uint8_t* buf) {
 
 }
 
+//initial allocation for buffer
+uint16_t CO2;
+uint16_t tVOC;
+
 int main(void) {
-	//initial allocation for buffer
-	uint8_t* buf= malloc(8 * sizeof(uint8_t));
+
+	uint8_t* buf = malloc(8 * sizeof(uint8_t));
+	/* USER CODE BEGIN 1 */
+
+	/* USER CODE END 1 */
+
 	/* MCU Configuration----------------------------------------------------------*/
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -188,39 +209,58 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_USART2_UART_Init();
 
+	/* USER CODE BEGIN 2 */
+
+	/* USER CODE END 2 */
+
 	/* Configure the air quality measurement sensor */
 	configureCCS811(buf);
 
 	/* define a burstsize for the number of bytes to read in the buffer */
 	int burstSize = 4;
 
-	uint16_t CO2;
-	uint16_t tVOC;
-
 	//this bit is only to make continuous prints visible in xterm by using alternating dots
-	int i=0;
-	char *dots[]={".","..","...","....",".....","......",".......","........"};
+	//int i = 0;
+	//char *dots[] = { ".", "..", "...", "....", ".....", "......", ".......","........" };
 
+	//Read at least once after configuration, so the sensor triggers a "new value interrupt"
+	AIRQ_READ_REGISTER(buf, CSS811_ALG_RESULT_DATA, burstSize);
+	char str[200];
+
+	CO2 = (buf[0] << 8) | buf[1];
+	tVOC = (buf[2] << 8) | buf[3];
+
+	//sprintf(str, "CO2 : %d \t , \t tVOC : %d %s\r\n", CO2, tVOC,dots[i]);
+	sprintf(str, "%d %d\r\n", CO2, tVOC);
+	HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-		/* temporary use of delays and polling mode, with no regard to power usage. Interrupts will follow soon */
-		HAL_Delay(300);
+		/* USER CODE END WHILE */
 
+		/* USER CODE BEGIN 3 */
+
+	}
+	/* USER CODE END 3 */
+
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if (GPIO_Pin == GPIO_PIN_8) {
+		uint8_t* buf = malloc(8 * sizeof(uint8_t));
 		/* Read the algorithm result data, returning 4 bytes : 2 MSBytes for CO2, 2 LSBytes for tVOC */
-		AIRQ_READ_REGISTER(buf, CSS811_ALG_RESULT_DATA, burstSize);
+		AIRQ_READ_REGISTER(buf, CSS811_ALG_RESULT_DATA, 4);
 		char str[200];
 
 		CO2 = (buf[0] << 8) | buf[1];
 		tVOC = (buf[2] << 8) | buf[3];
 
-
 		//sprintf(str, "CO2 : %d \t , \t tVOC : %d %s\r\n", CO2, tVOC,dots[i]);
 		sprintf(str, "%d %d\r\n", CO2, tVOC);
 		HAL_UART_Transmit(&huart2, (uint8_t*) str, strlen(str), HAL_MAX_DELAY);
 
-		//this bit is only to make continuous prints visible in xterm by using alternating dots
-		i=(i+1)%8;
 	}
-
 }
 
 /** System Clock Configuration
@@ -305,15 +345,34 @@ static void MX_USART2_UART_Init(void) {
 
 }
 
-/** Pinout Configuration
+/** Configure pins as 
+ * Analog
+ * Input
+ * Output
+ * EVENT_OUT
+ * EXTI
  */
 static void MX_GPIO_Init(void) {
+
+	GPIO_InitTypeDef GPIO_InitStruct;
 
 	/* GPIO Ports Clock Enable */
 	__HAL_RCC_GPIOA_CLK_ENABLE()
 	;
+	__HAL_RCC_GPIOC_CLK_ENABLE()
+	;
 	__HAL_RCC_GPIOB_CLK_ENABLE()
 	;
+
+	/*Configure GPIO pin : PC8 */
+	GPIO_InitStruct.Pin = GPIO_PIN_8;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 
