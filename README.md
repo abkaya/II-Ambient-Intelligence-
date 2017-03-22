@@ -43,4 +43,6 @@ output format:
 
 CO2-data TVOC-data
 
+![airQ-plot](images/airQ-plot.png)
+
 #### barometer
