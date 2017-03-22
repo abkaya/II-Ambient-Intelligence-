@@ -341,49 +341,92 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
     printf("** SEND DASH7 DATA ** \n\r");
     
-    /* 
-    
-    
-    
+/*  
     -----------------------------FULL COMMAND WITH DATA [0,1] -------------------
-    41 54 24 44 c0 00 0e b4 af 32 d7 01 00 10 01 20 01 00 02 00 01
-    0x41 0x54 0x24 0x44 0xc0 0x00 0x0e 0xb4 0xaf 0x32 0xd7 0x01 0x00 0x10 0x01 0x20 0x01 0x00 0x02 0x00 0x01
+    41 54 24 44 c0 00 0e 34 af 32 d7 01 00 10 01 20 01 00 02 00 01 
+    0x41 0x54 0x24 0x44 0xc0 0x00 0x0e 0x34 0xaf 0x32 0xd7 0x01 0x00 0x10 0x01 0x20 0x01 0x00 0x02 0x00 0x01
+    $41 $54 $24 $44 $c0 $00 $0e $34 $af $32 $d7 $01 $00 $10 $01 $20 $01 $00 $02 $00 $01
     
+            ---------------------SERIALIZE------------------------
+    41 54 24 44 c0 00 0e
     
-      SERIALIZE --> 0x41 0x54 0x24 0x44 0xc0 0x00 + LENGTH OF ALP (0x0e)
+        STATIC SER       LENGTH
+    [41 54 24 44 c0 00]  [0e]
     
-      ------------------ALP COMMAND------------------------
+    ++++++++++++++++ LENGTH ++++++++++++++++
+    Length of bytes of the ALP COMMAND
     
+    0e --> 14 --> Length
     
+            ---------------------ALP COMMAND----------------------
+    34 af 32 d7 01 00 10 01 20 01 00 02 00 01
     
+      TAG         FORWARD         RETURN FILE DATA 
+    [34 af] [32 d7 01 00 10 01] [20 01 00 02 00 01]
     
-    */
+    ++++++++++++++++ TAG ++++++++++++++++
     
-    char *message = "41 54 24 44 c0 00 0e b4 af 32 d7 01 00 10 01 20 01 00 02 00 01";
-    DASH7_Write(message);
+    ALP COMMAND: 
+    34 af
+    
+    34 --> 52   --> Request Tag
+    af --> 175  --> Tag Value (random)
+    
+    PARSED: Command with tag 175 (executing)
+    
+    ++++++++++++++++ FORWARD ++++++++++++++++
+    
+    ALP COMMAND:
+    32 d7 01 00 10 01
+    
+    32 --> 50    --> Forward
+    d7 --> 215   --> Interface Name (D7ASP)
+    01 --> 01    --> ResponseMode.RESP_MODE_ANY
+    00 --> 00    --> mant
+    10 --> 16    --> ??
+    01 --> 01    --> access_class
+    
+    PARSED:
+    actions:
+	action: Forward: interface-id=InterfaceType.D7ASP, configuration={'addressee': {'nls_method': <NlsMethod.NONE: 0>, 'access_class': 1, '__CLASS__': 'Addressee', 'id_type': <IdType.NOID: 1>, 'id': None}, 'qos': {'record': False, 'resp_mod': <ResponseMode.RESP_MODE_ALL: 1>, '__CLASS__': 'QoS', 'retry_mod': <RetryMode.RETRY_MODE_NO: 0>, 'stop_on_err': False}, '__CLASS__': 'Configuration', 'dorm_to': {'mant': 0, '__CLASS__': 'CT', 'exp': 0}}
+
+    ++++++++++++++ RETURN FILE DATA ++++++++++++++++
+    
+    ALP COMMAND:
+    20 01 00 02 00 01
+    
+    20 --> 32   --> Return File Data
+    01 --> 01   --> File ID
+    00 --> 00   --> Offset
+    02 --> 02   --> Length data bytes
+    
+    <DATA> [0,1] LENGTH:2
+    00 --> 00
+    00 --> 01
+    
+    PARSED:
+    actions:
+        action: ReturnFileData: file-id=1, size=1, offset=0, length=2, data=[0, 1]
+*/
+    
+    char *message1 = "41 54 24 44 c0 00 0e b4 af 32 d7 01 00 10 01 20 01 00 02 00 01";
+    char *message2 = "0x41 0x54 0x24 0x44 0xc0 0x00 0x0e 0xb4 0xaf 0x32 0xd7 0x01 0x00 0x10 0x01 0x20 0x01 0x00 0x02 0x00 0x01";
+    char *message3 = "$41 $54 $24 $44 $c0 $00 $0e $b4 $af $32 $d7 $01 $00 $10 $01 $20 $01 $00 $02 $00 $01";
+    DASH7_Write(message3);
     
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   }
 }
 
 static void DASH7_Write(char *mes){
-  size_t len = strlen(mes);
-  printf("[DASH7_DATA] = %s \n\n\r",mes);
-  
-  if (HAL_UART_Transmit(&huart1, (uint8_t *)mes, len,0xFFFF) != HAL_OK){
-    Error_Handler("DASH7 TRANSMIT ERROR");
-  }
-
-  /*## Wait for the end of the transfer ###################################*/
-  /*  Before starting a new communication transfer, you need to check the current
-      state of the peripheral; if it’s busy you need to wait for the end of current
-      transfer before starting a new one.
-      For simplicity reasons, this example is just waiting till the end of the
-      transfer, but application may perform other tasks while transfer operation
-      is ongoing. */
-  while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY){}
-  
-
+    size_t len = strlen(mes);
+    printf("[DASH7_DATA] = %s \n\n\r",mes);
+    
+    if (HAL_UART_Transmit(&huart1, (uint8_t *)mes, len,0xFFFF) != HAL_OK){
+      Error_Handler("DASH7 TRANSMIT ERROR");
+    }
+    
+    while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY){}
 }
 
 

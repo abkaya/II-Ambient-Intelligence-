@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.general.xcl" --backend -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.general.xcl" --backend -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.general.xcl" "--debug_file=%~1" --backend -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.general.xcl" "--debug_file=%~1" --backend -f "C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM\settings\nucleo.nucleo.driver.xcl" 
 
 @echo off 
 :end
