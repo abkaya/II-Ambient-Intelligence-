@@ -50,13 +50,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint8_t MPL3115A2_Initialized = 0;
+uint8_t MAG3110_Initialized = 0;
 /* Private variables ---------------------------------------------------------*/
-
+#define barom 0x60
+#define magneto 14
+#define accel 0x55
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,10 +75,104 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN 0 */
 
+void SENSE_WRITE_REGISTER(uint8_t reg, uint8_t value, uint8_t device)
+{
+  uint8_t pData[]={reg, value};
+  device = device <<1;
+  int status=HAL_I2C_Master_Transmit(&hi2c1, device, pData,2, HAL_MAX_DELAY);  
+}
+
+uint8_t SENSE_READ_REGISTER(uint8_t reg, uint8_t device)
+{
+  uint8_t buf;
+  device = device <<1;
+  int status = HAL_I2C_Mem_Read(&hi2c1, device, reg, I2C_MEMADD_SIZE_8BIT, &buf, 1, HAL_MAX_DELAY);
+
+  return buf;
+}
+
+int16_t MAG3110_ReadRawData_x() 
+{
+  char r = 0;
+  int16_t a = 0;
+  if (MAG3110_Initialized == 1) 
+  {
+    a = SENSE_READ_REGISTER(1, magneto);
+    a = SENSE_READ_REGISTER(2, magneto);
+    SENSE_WRITE_REGISTER(17, 128, magneto);
+    SENSE_WRITE_REGISTER(16, 2, magneto);
+    do 
+    {
+      r = SENSE_READ_REGISTER(0, magneto);
+    } 
+    while (!(r & 1));
+    a = SENSE_READ_REGISTER(1, magneto);
+    a = a << 8;
+    a = a + SENSE_READ_REGISTER(2, magneto);
+  }	
+  return a;
+}
+
+int16_t MAG3110_ReadRawData_y() 
+{
+  char r = 0;
+  int16_t a = 0;
+  if (MAG3110_Initialized == 1) 
+  {
+    a = SENSE_READ_REGISTER(3, magneto);
+    a = SENSE_READ_REGISTER(4, magneto);
+    SENSE_WRITE_REGISTER(17, 128, magneto);
+    SENSE_WRITE_REGISTER(16, 2, magneto);
+    do 
+    {
+      r = SENSE_READ_REGISTER(0, magneto);
+    } 
+    while (!(r & 2));
+    a = SENSE_READ_REGISTER(3, magneto);
+    a = a << 8;
+    a = a + SENSE_READ_REGISTER(4, magneto);
+  }	
+  return a;
+}
+
+int16_t MAG3110_ReadRawData_z() 
+{
+  char r = 0;
+  int16_t a = 0;
+  if (MAG3110_Initialized == 1) 
+  {
+    a = SENSE_READ_REGISTER(5, magneto);
+    a = SENSE_READ_REGISTER(6, magneto);
+    SENSE_WRITE_REGISTER(17, 128, magneto);
+    SENSE_WRITE_REGISTER(16, 2, magneto);
+    do 
+    {
+      r = SENSE_READ_REGISTER(0, magneto);
+    } 
+    while (!(r & 4));
+    a = SENSE_READ_REGISTER(5, magneto);
+    a = a << 8;
+    a = a + SENSE_READ_REGISTER(6, magneto);
+  }	
+  return a;
+}
+
+int16_t* Read_MagRawData()
+{
+ static int16_t xyz[3];
+  
+  xyz[0] = MAG3110_ReadRawData_x();
+  xyz[1] = MAG3110_ReadRawData_y();
+  xyz[2] = MAG3110_ReadRawData_z();  
+  return xyz;
+}
+
+/*
 void MPL3115A2_WRITE_REGISTER(uint8_t reg, uint8_t value)
 {
   uint8_t pData[]={reg, value };
   int status=HAL_I2C_Master_Transmit(&hi2c1, 0xc0, pData,2, HAL_MAX_DELAY);
+  
 }
 
 uint8_t MPL3115A2_READ_REGISTER(uint8_t reg)
@@ -86,62 +182,95 @@ uint8_t MPL3115A2_READ_REGISTER(uint8_t reg)
 
   return buf;
 }
+*/
+void MAG3110_Init() 
+{
+  uint8_t v = 0;  
+  //bcm2835_i2c_setClockDivider(2500);
+  SENSE_WRITE_REGISTER(16, 0, magneto);
+  v = SENSE_READ_REGISTER(7, magneto);
+  if (v == 0xc4) 
+  {
+   SENSE_WRITE_REGISTER(17, 128, magneto);
+    MAG3110_Initialized = 1;
+  }  
+}
+
 void MPL3115A2_Init_Bar()
 {
-  uint8_t c = MPL3115A2_READ_REGISTER(12);
+  uint8_t c = SENSE_READ_REGISTER(12, barom);
   if (c == 0xc4) 
   {
     MPL3115A2_Initialized = 1;
-    MPL3115A2_WRITE_REGISTER(0x26, 0x38);
-    MPL3115A2_WRITE_REGISTER(0x27, 0x00);
-    MPL3115A2_WRITE_REGISTER(0x28, 0x11);
-    MPL3115A2_WRITE_REGISTER(0x29, 0x00);
-    MPL3115A2_WRITE_REGISTER(0x2a, 0x00);
-    MPL3115A2_WRITE_REGISTER(0x13, 0x07);
+    SENSE_WRITE_REGISTER(0x26, 0x38, barom);
+    SENSE_WRITE_REGISTER(0x27, 0x00, barom);
+    SENSE_WRITE_REGISTER(0x28, 0x11, barom);
+    SENSE_WRITE_REGISTER(0x29, 0x00, barom);
+    SENSE_WRITE_REGISTER(0x2a, 0x00, barom);
+    SENSE_WRITE_REGISTER(0x13, 0x07, barom);
   }
 }
+
 void MPL3115A2_Active()
 {
-  uint8_t v = MPL3115A2_READ_REGISTER(0x26);
+  uint8_t v = SENSE_READ_REGISTER(0x26, barom);
   v = v | 0x01;
-  MPL3115A2_WRITE_REGISTER(0x26, v);
+  SENSE_WRITE_REGISTER(0x26, v, barom);
 }
 
 void MPL3115A2_Standby()
 {
-  uint8_t v = MPL3115A2_READ_REGISTER(0x26);
+  uint8_t v = SENSE_READ_REGISTER(0x26, barom);
   v = v & ~0x01;
-  MPL3115A2_WRITE_REGISTER(0x26, v);
+  SENSE_WRITE_REGISTER(0x26, v, barom);
 }
-
 
 int MPL3115A2_Read_Alt()
 {
   int a = 0;
   if (MPL3115A2_Initialized == 1) 
   {
-    a = MPL3115A2_READ_REGISTER(0x01);
+    a = SENSE_READ_REGISTER(0x01, barom);
     a <<= 8;
-    int b = MPL3115A2_READ_REGISTER(0x02);
+    int b = SENSE_READ_REGISTER(0x02, barom);
     a = a + b;
     a <<= 8;
-    int c = MPL3115A2_READ_REGISTER(0x03);
+    int c = SENSE_READ_REGISTER(0x03, barom);
     a = a + c;
   }
   return a;
 }
 
-double getBar() {
+double getBar() 
+{
   int v = MPL3115A2_Read_Alt();
   int alt_m = v >> 6;
   int alt_l = v & 0x30;
   return alt_m + alt_l / 64.0;
 }
 
+double getTemp() {
+  int t = MPL3115A2_Read_Temp();
+  int t_m = (t >> 8) & 0xFF;
+  int t_l = t & 0xFF;
+  if (t_m > 0x7f) t_m = t_m - 256;
+  return t_m + t_l / 256.0;
+}
+
+int MPL3115A2_Read_Temp() 
+{
+  int a = 0;
+  if (MPL3115A2_Initialized == 1) 
+  {
+    a = (SENSE_READ_REGISTER(0x04, barom) << 8) + SENSE_READ_REGISTER(0x05, barom);
+  }
+  return a;
+}
+/*
 void MPL3115A2_NewAntPrint()
 {
   double bar=0;
-  uint8_t c = MPL3115A2_READ_REGISTER(0x12);
+  uint8_t c = SENSE_READ_REGISTER(0x12, barom);
   if((c && (0x80)))
   {
     bar=getBar();
@@ -150,6 +279,7 @@ void MPL3115A2_NewAntPrint()
   printf(str, "ba = %d", bar);
  // HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
 }
+*/
 
 PUTCHAR_PROTOTYPE
 {
@@ -174,14 +304,24 @@ int main(void)
   /* USER CODE BEGIN 2 */
   MPL3115A2_Init_Bar();
   MPL3115A2_Active();
+  
+  MAG3110_Init();
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-    double t=getBar();
-    printf("bar = %f\n\r", t);
+    //double t=getBar();
+   // double temp = getTemp();
+    //printf("bar = %f\n\r", t); 
+    //printf("Temp = %f\n\r", temp); 
+    int16_t* xyz;
+    xyz = Read_MagRawData();
+    printf("Magnetometer is geinitialiseerd: %d\r\n", MAG3110_Initialized);
+    printf("X-magneetwaarde: %d\n\r", *(xyz+0));
+    printf("Y-magneetwaarde: %d\n\r", *(xyz+1));
+    printf("Z-magneetwaarde: %d\n\r", *(xyz+2));
     //HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
     /* USER CODE BEGIN 3 */
   }
@@ -239,29 +379,29 @@ void SystemClock_Config(void)
 }
 
 /* I2C1 init function */
-static void MX_I2C1_Init(void) {
-	  GPIO_InitTypeDef GPIO_InitStruct;
+static void MX_I2C1_Init(void) 
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
 
-	  /* Peripheral clock enable */
-	  __HAL_RCC_I2C1_CLK_ENABLE();
+  /* Peripheral clock enable */
+  __HAL_RCC_I2C1_CLK_ENABLE();
 
-	  hi2c1.Instance = I2C1;
-	  hi2c1.Init.ClockSpeed = 50000;
-	  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-	  hi2c1.Init.OwnAddress1 = 0;
-	  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-	  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-	  hi2c1.Init.OwnAddress2 = 0;
-	  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-	  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-	  //HAL_I2C_Init(&hi2c1);
-
-	  GPIO_InitStruct.Pin =GPIO_PIN_6|GPIO_PIN_7;
-	  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-	  GPIO_InitStruct.Pull = GPIO_PULLUP;
-	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-	  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 50000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  //HAL_I2C_Init(&hi2c1);       
+  GPIO_InitStruct.Pin =GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
