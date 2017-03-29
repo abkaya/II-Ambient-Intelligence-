@@ -34,8 +34,6 @@
 #include "main.h"
 #include "stm32l1xx_hal.h"
 
-
-
 /* USER CODE BEGIN Includes */
 
 #ifdef __GNUC__
@@ -75,6 +73,11 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN 0 */
 
+/********************
+*********************
+**I2C R/W FUNCTIONS**
+*********************
+*********************/
 void SENSE_WRITE_REGISTER(uint8_t reg, uint8_t value, uint8_t device)
 {
   uint8_t pData[]={reg, value};
@@ -90,6 +93,12 @@ uint8_t SENSE_READ_REGISTER(uint8_t reg, uint8_t device)
 
   return buf;
 }
+
+/*************************
+**************************
+* MAGNETOMETER FUNCTIONS**
+**************************
+**************************/
 
 int16_t MAG3110_ReadRawData_x() 
 {
@@ -167,22 +176,6 @@ int16_t* Read_MagRawData()
   return xyz;
 }
 
-/*
-void MPL3115A2_WRITE_REGISTER(uint8_t reg, uint8_t value)
-{
-  uint8_t pData[]={reg, value };
-  int status=HAL_I2C_Master_Transmit(&hi2c1, 0xc0, pData,2, HAL_MAX_DELAY);
-  
-}
-
-uint8_t MPL3115A2_READ_REGISTER(uint8_t reg)
-{
-  uint8_t buf;
-  int status = HAL_I2C_Mem_Read(&hi2c1, 0xc0, reg, I2C_MEMADD_SIZE_8BIT, &buf, 1, HAL_MAX_DELAY);
-
-  return buf;
-}
-*/
 void MAG3110_Init() 
 {
   uint8_t v = 0;  
@@ -195,6 +188,12 @@ void MAG3110_Init()
     MAG3110_Initialized = 1;
   }  
 }
+
+/**********************
+***********************
+* BAROMETER FUNCTIONS**
+***********************
+***********************/
 
 void MPL3115A2_Init_Bar()
 {
@@ -249,6 +248,12 @@ double getBar()
   return alt_m + alt_l / 64.0;
 }
 
+/************************
+*************************
+**THERMOMETER FUNCTIONS**
+*************************
+*************************/
+
 double getTemp() {
   int t = MPL3115A2_Read_Temp();
   int t_m = (t >> 8) & 0xFF;
@@ -266,21 +271,59 @@ int MPL3115A2_Read_Temp()
   }
   return a;
 }
-/*
-void MPL3115A2_NewAntPrint()
-{
-  double bar=0;
-  uint8_t c = SENSE_READ_REGISTER(0x12, barom);
-  if((c && (0x80)))
-  {
-    bar=getBar();
-  }
-  char str[80];
-  printf(str, "ba = %d", bar);
- // HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
-}
-*/
 
+/**************************
+***************************
+**ACCELEROMETER FUNCTIONS**
+***************************
+***************************/
+void EnableAccel()
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+  printf("Enable is set:%d\n\r", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7));
+}
+
+void DisableAccel()
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+  printf("Enable is reset:%d\n\r", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7));
+}
+
+int16_t* MMA8491_ReadRaw() 
+{
+  int16_t x = 0;
+  int16_t y = 0;
+  int16_t z = 0;
+  uint8_t status = 0;
+  uint8_t bit = 0;
+  EnableAccel();
+  HAL_Delay(50);
+  do 
+  {
+    status = SENSE_READ_REGISTER(0x00, accel);
+    bit = (status >> 3) & 1;
+  }while(!bit);
+  x = SENSE_READ_REGISTER(0x01, accel) << 8;
+  x += SENSE_READ_REGISTER(0x02, accel);
+  x >>= 2; 
+  y = SENSE_READ_REGISTER(0x03, accel) << 8;
+  y += SENSE_READ_REGISTER(0x04, accel);
+  y >>= 2;
+  z = SENSE_READ_REGISTER(0x05, accel) << 8;
+  z += SENSE_READ_REGISTER(0x06, accel);
+  z >>= 2;
+  DisableAccel();  
+  static int16_t xyz[3];
+  xyz[0] = x;
+  xyz[1] = y; 
+  xyz[2] = z;
+  return xyz;
+}                     
+                    
+
+/*
+* use printf through uart
+*/
 PUTCHAR_PROTOTYPE
 {
   /* Place your implementation of fputc here */
@@ -292,6 +335,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   /* USER CODE END 1 */
+  
   /* MCU Configuration----------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -301,29 +345,31 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_USART2_UART_Init();
+  
   /* USER CODE BEGIN 2 */
   MPL3115A2_Init_Bar();
-  MPL3115A2_Active();
-  
+  MPL3115A2_Active();  
   MAG3110_Init();
+  
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-    //double t=getBar();
-   // double temp = getTemp();
-    //printf("bar = %f\n\r", t); 
-    //printf("Temp = %f\n\r", temp); 
-    int16_t* xyz;
-    xyz = Read_MagRawData();
-    printf("Magnetometer is geinitialiseerd: %d\r\n", MAG3110_Initialized);
-    printf("X-magneetwaarde: %d\n\r", *(xyz+0));
-    printf("Y-magneetwaarde: %d\n\r", *(xyz+1));
-    printf("Z-magneetwaarde: %d\n\r", *(xyz+2));
-    //HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
     /* USER CODE BEGIN 3 */
+
+    int16_t* xyz;
+//    xyz = Read_MagRawData();
+//    printf("Magnetometer is geinitialiseerd: %d\r\n", MAG3110_Initialized);
+//    printf("X-magneetwaarde: %d\n\r", *(xyz+0));
+//    printf("Y-magneetwaarde: %d\n\r", *(xyz+1));
+//    printf("Z-magneetwaarde: %d\n\r", *(xyz+2));
+    xyz = MMA8491_ReadRaw();
+    printf("X-accel: %d\n\r", *(xyz+0));
+    printf("Y-accel: %d\n\r", *(xyz+1));
+    printf("Z-accel: %d\n\r\n", *(xyz+2));
+    HAL_Delay(500);
   }
 /* USER CODE END 3 */
 }
@@ -407,13 +453,11 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-
 }
 
 /* USART2 init function */
 static void MX_USART2_UART_Init(void)
 {
-
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -426,18 +470,24 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-
 }
 
 /** Pinout Configuration
 */
 static void MX_GPIO_Init(void)
-{
-
+{  
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+  GPIO_InitTypeDef GPIO_InitStruct;
+  
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */
@@ -476,15 +526,5 @@ void assert_failed(uint8_t* file, uint32_t line)
   /* USER CODE END 6 */
 
 }
-
 #endif
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-*/ 
-
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
