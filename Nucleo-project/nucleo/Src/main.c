@@ -33,6 +33,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
+#include <stdlib.h>
 
 /* USER CODE BEGIN Includes */
 /* Private function prototypes -----------------------------------------------*/
@@ -44,6 +45,10 @@
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 
+#define RXBUFFERSIZE                      10
+#define DASH7_ARRAYLENGTH                 3
+#define DASH7_DATALENGTH                  DASH7_ARRAYLENGTH * 2      
+#define ALP_LENGTH                        12 + DASH7_DATALENGTH  
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -55,8 +60,11 @@ UART_HandleTypeDef huart2;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
+uint8_t aRxBuffer[RXBUFFERSIZE];
+
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+
 
 /* USER CODE END PV */
 
@@ -70,7 +78,11 @@ static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USB_PCD_Init(void);
 static void EXTI15_10_IRQHandler_Config(void);
-static void DASH7_Write(char *mes);
+static void DASH7_Write();
+static void DASH7_Read();
+static void dataToHex(int data,int dataHex[]);
+static void ALP_Generator(int data[]);
+//unsigned int int_to_int(unsigned int k);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -112,7 +124,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    DASH7_Read();
     
   }
   /* USER CODE END 3 */
@@ -339,9 +351,80 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == B1_Pin)
   {
-    printf("** SEND DASH7 DATA ** \n\r");
+   //printf("** SEND DASH7 DATA ** \n\r");
     
-/*  
+
+  //DASH7_Write();
+  int data[] = {460,20,300};
+  ALP_Generator(data);
+    
+    
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+  }
+}
+
+static void DASH7_Write(){  
+    uint8_t message[] = {0x41 ,0x54 ,0x24 ,0x44 ,0xc0 ,0x00 ,0x0e ,0xb4 ,0xaf ,0x32 ,0xd7 ,0x01 ,0x00 ,0x10 ,0x01 ,0x20 ,0x01 ,0x00 ,0x02 ,0x00 ,0x01};  
+    //printf("[DASH7_DATA] = %s \n\n\r",message);
+    //HAL_UART_Transmit(&huart1, (uint8_t*)message, sizeof(message),HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart2, (uint8_t*)message, sizeof(message),HAL_MAX_DELAY);
+}
+
+
+
+static void DASH7_Read(){
+  char readBuf[1];
+  HAL_UART_Receive(&huart1, (uint8_t*)readBuf, 1, HAL_MAX_DELAY);
+  int opt = atoi(readBuf);
+  if (opt != 0) {
+      printf("** RECEIVED DASH7 DATA ** \n\r");
+      printf("[DASH7_DATA] = %s \n\n\r",readBuf);
+      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+      HAL_Delay(100);
+      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+  }
+}
+
+void getBin(int num, char *str)
+{
+  *(str+15) = '\0';
+  int mask = 0x8000 << 1;
+  while(mask >>= 1)
+    *str++ = !!(mask & num) + '0';
+}
+
+
+static void dataToHex(int data,int dataHex[2]){
+  char binstr[16];
+  getBin(data, binstr);
+  int len = strlen(binstr);
+  
+  printf("[DATA] = %d \n\r",data);
+  printf("[BIN] = %s \n\r",binstr);
+  
+  int len1 = len/2;
+  int len2 = len - len1; // Compensate for possible odd length
+  char *s1 = (uint8_t*)malloc(len1+1); // one for the null terminator
+  memcpy(s1, binstr, len1);
+  s1[len1] = '\0';
+  char *s2 = (uint8_t*)malloc(len2+1); // one for the null terminator
+  memcpy(s2, binstr+len1, len2);
+  s2[len2] = '\0';
+  
+  printf("[BIN1] = %s \n\r",s1);
+  printf("[BIN2] = %s \n\n\r",s2);
+  
+  dataHex[0] = strtol(s1, NULL, 2);
+  dataHex[1] = strtol(s2, NULL, 2);
+  
+  free(s1);
+  free(s2);
+
+}
+
+static void ALP_Generator(int data[]){
+      
+  /*  
     -----------------------------FULL COMMAND WITH DATA [0,1] -------------------
     41 54 24 44 c0 00 0e 34 af 32 d7 01 00 10 01 20 01 00 02 00 01 
     0x41 0x54 0x24 0x44 0xc0 0x00 0x0e 0x34 0xaf 0x32 0xd7 0x01 0x00 0x10 0x01 0x20 0x01 0x00 0x02 0x00 0x01
@@ -408,27 +491,43 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     actions:
         action: ReturnFileData: file-id=1, size=1, offset=0, length=2, data=[0, 1]
 */
+  
+   //printf("[ALP_LENGTH] = %d \n\n\r",7 + ALP_LENGTH);
     
-    char *message1 = "41 54 24 44 c0 00 0e b4 af 32 d7 01 00 10 01 20 01 00 02 00 01";
-    char *message2 = "0x41 0x54 0x24 0x44 0xc0 0x00 0x0e 0xb4 0xaf 0x32 0xd7 0x01 0x00 0x10 0x01 0x20 0x01 0x00 0x02 0x00 0x01";
-    char *message3 = "$41 $54 $24 $44 $c0 $00 $0e $b4 $af $32 $d7 $01 $00 $10 $01 $20 $01 $00 $02 $00 $01";
-    DASH7_Write(message3);
-    
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  }
-}
+    uint8_t ALPCommand[7 + ALP_LENGTH] = {  
+      0x41, 0x54, 0x24, 0x44, 0xc0, 0x00, ALP_LENGTH, // SERIAL
+      0x34, 0x01, //TAG
+      0x32, 0xd7, 0x01, 0x00, 0x10, 0x01, //FORWARD
+      0x20, 0x01, 0x00, //CommnandLine
+      DASH7_DATALENGTH //Data
+    };
 
-static void DASH7_Write(char *mes){
-    size_t len = strlen(mes);
-    printf("[DASH7_DATA] = %s \n\n\r",mes);
-    
-    if (HAL_UART_Transmit(&huart1, (uint8_t *)mes, len,0xFFFF) != HAL_OK){
-      Error_Handler("DASH7 TRANSMIT ERROR");
-    }
-    
-    while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY){}
-}
+   int datacounter = 0;
+   int arraycounter = 19;
+   int dataHex[2];
+ 
+   while(datacounter < DASH7_ARRAYLENGTH){
 
+    dataToHex(data[datacounter],dataHex);
+
+    ALPCommand[arraycounter] = dataHex[0];
+    //printf("[SPOT0] = %d \n\n\r",arraycounter);
+    //printf("[DATA%d:HEX0] = %X \n\r",datacounter,dataHex[0]);
+    arraycounter++;
+    
+    ALPCommand[arraycounter] = dataHex[1];
+    //printf("[SPOT1] = %d \n\n\r",arraycounter);
+    //printf("[DATA%d:HEX1] = %X \n\n\r",datacounter,dataHex[1]);
+    arraycounter++;
+    datacounter++;
+    
+    dataHex[0] = 0;
+    dataHex[1] = 0;
+   }
+ 
+  HAL_UART_Transmit(&huart2, (uint8_t*)ALPCommand, sizeof(ALPCommand),HAL_MAX_DELAY);
+   
+}
 
 #ifdef USE_FULL_ASSERT
 

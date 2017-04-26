@@ -1,16 +1,16 @@
-"C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Src\stm32l1xx_hal_cortex.c"
+"C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Src\stm32l1xx_hal_cortex.c"
 -std=c99
 -ferror-limit=100
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM/../Inc
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM/../Inc
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM/../Drivers/STM32L1xx_HAL_Driver/Inc
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM/../Drivers/STM32L1xx_HAL_Driver/Inc
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM/../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM/../Drivers/STM32L1xx_HAL_Driver/Inc/Legacy
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM/../Drivers/CMSIS/Device/ST/STM32L1xx/Include
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM/../Drivers/CMSIS/Device/ST/STM32L1xx/Include
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\EWARM/../Drivers/CMSIS/Include
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\EWARM/../Drivers/CMSIS/Include
 -I
 C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers
 -I
@@ -20,15 +20,15 @@ C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\arm\inc
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\arm\inc\c
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Inc
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Inc
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Inc
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Inc
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Inc\Legacy
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Drivers\STM32L1xx_HAL_Driver\Inc\Legacy
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers\CMSIS\Device\ST\STM32L1xx\Include
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Drivers\CMSIS\Device\ST\STM32L1xx\Include
 -I
-C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers\CMSIS\Include
+C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\II-Ambient-Intelligence-\Nucleo-project\nucleo\Drivers\CMSIS\Include
 -I
 C:\Users\wrende\Dropbox\School\Trimester 2\Ambient Intelligence\Embedded\Project\Nucleo-project\nucleo\Drivers
 -I
