@@ -89,7 +89,7 @@ def main():
   a0, = ax.plot([], [], label="eCO2", linestyle='--')
   a1, = ax.plot([], [], label="tVOC")
   
-  plt.legend([a0, a1], ["eCO2", "tVOC"])
+  plt.legend([a0, a1], ["eCO2[ppm]", "tVOC[ppb]"])
 
   # Create a legend for the first line.
   #first_legend = plt.legend(handles=[a0], loc=1)
