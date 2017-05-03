@@ -1,1 +1,72 @@
-[{"room_name": "V315", "room_id": "1", "RSSI": [{"Gateway": "b5700000912fd", "RSSI-Value": 83.0}, {"Gateway": "b570000091ac9", "RSSI-Value": 70.0}]},{"room_name": "V315", "room_id": "2", "RSSI": [{"Gateway": "b5700000912fd", "RSSI-Value": 81.0}, {"Gateway": "b570000091ac9", "RSSI-Value": 65.0}]},{"room_name": "V315", "room_id": "3", "RSSI": [{"Gateway": "b5700000912fd", "RSSI-Value": 79.0}, {"Gateway": "b570000091ac9", "RSSI-Value": 64.0}]},{"room_name": "V315", "room_id": "4", "RSSI": [{"Gateway": "b5700000912fd", "RSSI-Value": 81.0}, {"Gateway": "b570000091ac9", "RSSI-Value": 62.0}]},{"room_name": "V315", "room_id": "5", "RSSI": [{"Gateway": "b5700000912fd", "RSSI-Value": 81.0}, {"Gateway": "b570000091ac9", "RSSI-Value": 59.0}]}]
+[
+    {
+        "room_name": "V315",
+        "room_id": "1",
+        "RSSI": [
+            {
+                "Gateway": "b5700000912fd",
+                "RSSI-Value": 83.0
+            },
+            {
+                "Gateway": "b570000091ac9",
+                "RSSI-Value": 70.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "2",
+        "RSSI": [
+            {
+                "Gateway": "b5700000912fd",
+                "RSSI-Value": 81.0
+            },
+            {
+                "Gateway": "b570000091ac9",
+                "RSSI-Value": 65.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "3",
+        "RSSI": [
+            {
+                "Gateway": "b5700000912fd",
+                "RSSI-Value": 79.0
+            },
+            {
+                "Gateway": "b570000091ac9",
+                "RSSI-Value": 64.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "4",
+        "RSSI": [
+            {
+                "Gateway": "b5700000912fd",
+                "RSSI-Value": 81.0
+            },
+            {
+                "Gateway": "b570000091ac9",
+                "RSSI-Value": 62.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "5",
+        "RSSI": [
+            {
+                "Gateway": "b5700000912fd",
+                "RSSI-Value": 81.0
+            },
+            {
+                "Gateway": "b570000091ac9",
+                "RSSI-Value": 59.0
+            }
+        ]
+    }
+]
