@@ -1,0 +1,1 @@
+[{"room_name": "testingroom", "room_id": "1", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 80.0}, {"Gateway": "gateway4", "RSSI-Value": 27.0}]},{"room_name": "anderekamer", "room_id": "2", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 79.0}, {"Gateway": "gateway4", "RSSI-Value": 28.0}]}]
