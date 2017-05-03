@@ -22,14 +22,15 @@ def getNeighbors(trainingSet, testInstance, k):
 		neighbors.append(distances[x][0])
 	return neighbors
 
-def getTrainset():
+
 trainSet = [[2, 2, 2, 'V315','1'], [4, 4, 4, 'V315','2']]
 
-def gettestInstance():
 testInstance = [5, 5, 5]
 
 k = 1
+
 neighbors = getNeighbors(trainSet, testInstance, 1)
+
 print "You are in"
 print "Room: " + neighbors[0][3]
 print "ID: " + neighbors[0][4]
