@@ -37,16 +37,29 @@ def on_message(mqttc, obj, msg):
 
         if gatewayID == 'b5700000912bf':
             gateway1.append(RSSI_value)
+        else:
+            gateway1.append(0)
         if gatewayID == 'b5700000912fd':
             gateway2.append(RSSI_value)
+        else:
+            gateway2.append(0)    
         if gatewayID == 'b5700000912d9':
             gateway3.append(RSSI_value)
+        else:
+            gateway3.append(0) 
         if gatewayID == 'b570000091ac9':
             gateway4.append(RSSI_value)
+        else:
+            gateway4.append(0)           
         if gatewayID == 'b5700000912d5':
             gateway5.append(RSSI_value)
+        else:
+            gateway5.append(0) 
         if gatewayID == 'b570000091291':
             gateway6.append(RSSI_value)
+        else:
+            gateway6.append(0) 
+
         global count
         count = count + 1
 
