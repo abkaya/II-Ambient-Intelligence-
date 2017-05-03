@@ -18,11 +18,11 @@
         "room_id": "2",
         "RSSI": [
             {
-                "Gateway": "gateway2",
+                "Gateway": "b5700000912fd",
                 "RSSI-Value": 74.0
             },
             {
-                "Gateway": "gateway4",
+                "Gateway": "b570000091ac9",
                 "RSSI-Value": 60.0
             }
         ]
@@ -32,11 +32,11 @@
         "room_id": "3",
         "RSSI": [
             {
-                "Gateway": "gateway2",
+                "Gateway": "b5700000912fd",
                 "RSSI-Value": 72.0
             },
             {
-                "Gateway": "gateway4",
+                "Gateway": "b570000091ac9",
                 "RSSI-Value": 64.0
             }
         ]
@@ -46,11 +46,11 @@
         "room_id": "4",
         "RSSI": [
             {
-                "Gateway": "gateway2",
+                "Gateway": "b5700000912fd",
                 "RSSI-Value": 95.0
             },
             {
-                "Gateway": "gateway4",
+                "Gateway": "b570000091ac9",
                 "RSSI-Value": 60.0
             }
         ]
@@ -60,11 +60,11 @@
         "room_id": "5",
         "RSSI": [
             {
-                "Gateway": "gateway2",
+                "Gateway": "b5700000912fd",
                 "RSSI-Value": 79.0
             },
             {
-                "Gateway": "gateway4",
+                "Gateway": "b570000091ac9",
                 "RSSI-Value": 27.0
             }
         ]
