@@ -4,11 +4,11 @@
         "room_id": "1",
         "RSSI": [
             {
-                "Gateway": "gateway2",
+                "Gateway": "b5700000912fd",
                 "RSSI-Value": 82.0
             },
             {
-                "Gateway": "gateway4",
+                "Gateway": "b570000091ac9",
                 "RSSI-Value": 53.0
             }
         ]
