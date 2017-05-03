@@ -55,7 +55,8 @@ print
 print "Creating new JSON file..."
 print "Give location name:"
 file_name = raw_input(prompt)
-f = open(file_name + ".JSON", 'a')
+file_path = "../Mapping/"
+f = open( file_path + file_name + ".JSON", 'a')
 
 #Create connection
 print("Create connection....")

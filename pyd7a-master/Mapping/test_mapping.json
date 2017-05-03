@@ -1,0 +1,13 @@
+{
+    "room": "V302A",
+    "RSSI":[
+        {
+            "Gateway": "gatewayid",
+            "RSSI-Value": "value"
+        },
+        {
+            "Gateway": "gatewayid",
+            "RSSI-Value": "value"
+        }
+    ]
+}
