@@ -1,1 +1,72 @@
-[{"room_name": "V315", "room_id": "1", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 82.0}, {"Gateway": "gateway4", "RSSI-Value": 53.0}]},{"room_name": "V315", "room_id": "2", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 74.0}, {"Gateway": "gateway4", "RSSI-Value": 60.0}]},{"room_name": "V315", "room_id": "3", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 72.0}, {"Gateway": "gateway4", "RSSI-Value": 64.0}]},{"room_name": "V315", "room_id": "4", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 95.0}, {"Gateway": "gateway4", "RSSI-Value": 60.0}]},{"room_name": "V315", "room_id": "5", "RSSI": [{"Gateway": "gateway2", "RSSI-Value": 79.0}, {"Gateway": "gateway4", "RSSI-Value": 27.0}]}]
+[
+    {
+        "room_name": "V315",
+        "room_id": "1",
+        "RSSI": [
+            {
+                "Gateway": "gateway2",
+                "RSSI-Value": 82.0
+            },
+            {
+                "Gateway": "gateway4",
+                "RSSI-Value": 53.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "2",
+        "RSSI": [
+            {
+                "Gateway": "gateway2",
+                "RSSI-Value": 74.0
+            },
+            {
+                "Gateway": "gateway4",
+                "RSSI-Value": 60.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "3",
+        "RSSI": [
+            {
+                "Gateway": "gateway2",
+                "RSSI-Value": 72.0
+            },
+            {
+                "Gateway": "gateway4",
+                "RSSI-Value": 64.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "4",
+        "RSSI": [
+            {
+                "Gateway": "gateway2",
+                "RSSI-Value": 95.0
+            },
+            {
+                "Gateway": "gateway4",
+                "RSSI-Value": 60.0
+            }
+        ]
+    },
+    {
+        "room_name": "V315",
+        "room_id": "5",
+        "RSSI": [
+            {
+                "Gateway": "gateway2",
+                "RSSI-Value": 79.0
+            },
+            {
+                "Gateway": "gateway4",
+                "RSSI-Value": 27.0
+            }
+        ]
+    }
+]

@@ -94,53 +94,63 @@ if os.stat(file_path).st_size != 0:
 else:
     f.write("[")
 
-# CREATE ROOM
-print "Give room name:"
-room_name = raw_input(prompt)
-print "Give room id:"
-room_id = raw_input(prompt)
+room_name = "1"
+while True:
+    json_data = []
 
-#Create connection
-print("Create connection....")
-mqttc.connect(MQTT_server, 1883, 60)
-mqttc.subscribe(MQTT_topic)
-print("Connection created....\n")
+    # CREATE ROOM
+    print "Give room name:"
+    room_name = raw_input(prompt)
+    if room_name == "0":
+        break
+    print "Give room id:"
+    room_id = raw_input(prompt)
 
-count = 0
-while count < 60:
-    mqttc.loop()
+    #Create connection
+    print("Create connection....")
+    mqttc.connect(MQTT_server, 1883, 60)
+    mqttc.subscribe(MQTT_topic)
+    print("Connection created....\n")
 
-if len(gateway1) > 0:
-    RSSI_gateway1 = round(sum(gateway1) / float(len(gateway1)))
-if len(gateway2) > 0:
-    RSSI_gateway2 = round(sum(gateway2) / float(len(gateway2)))
-if len(gateway3) > 0:
-    RSSI_gateway3 = round(sum(gateway3) / float(len(gateway3)))
-if len(gateway4) > 0:
-    RSSI_gateway4 = round(sum(gateway4) / float(len(gateway4)))
-if len(gateway5) > 0:
-    RSSI_gateway5 = round(sum(gateway5) / float(len(gateway5)))
-if len(gateway6) > 0:
-    RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
+    count = 0
+    while count < 5:
+        mqttc.loop()
 
-data = {}
-data['room_id'] = room_id
-data['room_name'] = room_name
-RSSI = []
-if len(gateway1) > 0:
-    RSSI.append({"Gateway": "gateway1","RSSI-Value": RSSI_gateway1 })
-if len(gateway2) > 0:
-    RSSI.append({"Gateway": "gateway2","RSSI-Value": RSSI_gateway2 })
-if len(gateway3) > 0:
-    RSSI.append({"Gateway": "gateway3","RSSI-Value": RSSI_gateway3 })
-if len(gateway4) > 0:
-    RSSI.append({"Gateway": "gateway4","RSSI-Value": RSSI_gateway4 })
-if len(gateway5) > 0:
-    RSSI.append({"Gateway": "gateway5","RSSI-Value": RSSI_gateway5 })
-if len(gateway6) > 0:
-    RSSI.append({"Gateway": "gateway6","RSSI-Value": RSSI_gateway6 })
-data['RSSI'] = RSSI
-json_data = json.dumps(data)
-f.write(json_data)
+    if len(gateway1) > 0:
+        RSSI_gateway1 = round(sum(gateway1) / float(len(gateway1)))
+    if len(gateway2) > 0:
+        RSSI_gateway2 = round(sum(gateway2) / float(len(gateway2)))
+    if len(gateway3) > 0:
+        RSSI_gateway3 = round(sum(gateway3) / float(len(gateway3)))
+    if len(gateway4) > 0:
+        RSSI_gateway4 = round(sum(gateway4) / float(len(gateway4)))
+    if len(gateway5) > 0:
+        RSSI_gateway5 = round(sum(gateway5) / float(len(gateway5)))
+    if len(gateway6) > 0:
+        RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
+
+    data = {}
+    data['room_id'] = room_id
+    data['room_name'] = room_name
+    RSSI = []
+    if len(gateway1) > 0:
+        RSSI.append({"Gateway": "gateway1","RSSI-Value": RSSI_gateway1 })
+    if len(gateway2) > 0:
+        RSSI.append({"Gateway": "gateway2","RSSI-Value": RSSI_gateway2 })
+    if len(gateway3) > 0:
+        RSSI.append({"Gateway": "gateway3","RSSI-Value": RSSI_gateway3 })
+    if len(gateway4) > 0:
+        RSSI.append({"Gateway": "gateway4","RSSI-Value": RSSI_gateway4 })
+    if len(gateway5) > 0:
+        RSSI.append({"Gateway": "gateway5","RSSI-Value": RSSI_gateway5 })
+    if len(gateway6) > 0:
+        RSSI.append({"Gateway": "gateway6","RSSI-Value": RSSI_gateway6 })
+    data['RSSI'] = RSSI
+    json_data = json.dumps(data)
+    f.write(json_data)
+    f.write(",")
+
+f.seek(-1,os.SEEK_END)
+f.truncate()    
 f.write("]")
 f.close()
