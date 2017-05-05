@@ -1,5 +1,4 @@
 src/main.o: ../src/main.c \
- /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/kits/EFM32GG_STK3700/examples/emode/lcd_setup.h \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/kits/EFM32GG_STK3700/examples/emode/emodes.h \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/emlib/inc/em_cmu.h \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/Device/SiliconLabs/EFM32GG/Include/em_device.h \
@@ -62,8 +61,6 @@ src/main.o: ../src/main.c \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/emlib/inc/em_system.h \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/emlib/inc/em_gpio.h \
  /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/emlib/inc/em_assert.h
-
-/home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/kits/EFM32GG_STK3700/examples/emode/lcd_setup.h:
 
 /home/clnx/SimplicityStudio/SimplicityStudio_v3/developer/sdks/efm32/v2/kits/EFM32GG_STK3700/examples/emode/emodes.h:
 
