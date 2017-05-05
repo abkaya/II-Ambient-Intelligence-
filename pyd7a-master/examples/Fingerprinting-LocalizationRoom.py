@@ -1,8 +1,8 @@
 from sys import argv
-import paho.mqtt.client as mqtt
 import json
 import math
-import operator 
+import operator
+import paho.mqtt.client as mqtt
 
 def euclideanDistance(instance1, instance2, length):
 	distance = 0
