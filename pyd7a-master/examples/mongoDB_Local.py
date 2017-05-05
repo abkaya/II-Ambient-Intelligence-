@@ -3,6 +3,7 @@ import json
 import math
 import operator
 import paho.mqtt.client as mqtt
+from pymongo import MongoClient
 
 # b5700000912bf
 gateway1 = []
@@ -76,8 +77,16 @@ def getNeighbors(trainingSet, testInstance, k):
 		neighbors.append(distances[x][0])
 	return neighbors
 
-with open('../Mapping/V-blok.json') as json_data:
-    d = json.load(json_data)
+#Connect to MongoDB
+client = MongoClient('localhost', 27017)
+db = client['Ambient']
+collection = db['V-blok']
+
+#Get TrainingData
+d = []
+cursor = collection.find({})
+for document in cursor:
+    d.append(document)
 
 #Create Trainset
 trainSet = []
@@ -130,9 +139,10 @@ nodeRSSI.append(round(sum(gateway4) / float(len(gateway4))))
 nodeRSSI.append(round(sum(gateway5) / float(len(gateway5))))
 nodeRSSI.append(round(sum(gateway6) / float(len(gateway6))))
 
+
 #Print Location
 k = 1
-neighbors = getNeighbors(trainSet, nodeRSSI, k)
+neighbors = getNeighbors(trainSet, nodeRSSI, 1)
 print "You are in"
 print "Room: " + neighbors[0][6]
 print "ID: " + neighbors[0][7]
