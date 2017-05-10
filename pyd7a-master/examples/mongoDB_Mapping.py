@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import json
 import os
 from pymongo import MongoClient
+import datetime
 prompt = '> '
 
 # b5700000912bf
@@ -38,31 +39,20 @@ def on_message(mqttc, obj, msg):
 
         if gatewayID == 'b5700000912bf':
             gateway1.append(RSSI_value)
-        else:
-            gateway1.append(0)
         if gatewayID == 'b5700000912fd':
-            gateway2.append(RSSI_value)
-        else:
-            gateway2.append(0)    
+            gateway2.append(RSSI_value)  
         if gatewayID == 'b5700000912d9':
             gateway3.append(RSSI_value)
-        else:
-            gateway3.append(0) 
         if gatewayID == 'b570000091ac9':
-            gateway4.append(RSSI_value)
-        else:
-            gateway4.append(0)           
+            gateway4.append(RSSI_value)          
         if gatewayID == 'b5700000912d5':
             gateway5.append(RSSI_value)
-        else:
-            gateway5.append(0) 
         if gatewayID == 'b570000091291':
             gateway6.append(RSSI_value)
-        else:
-            gateway6.append(0) 
 
         global count
         count = count + 1
+
 
 
 def on_publish(mqttc, obj, mid):
@@ -140,22 +130,36 @@ while True:
         RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
 
     data = {}
-    data['room_id'] = room_id
+    data['room_id'] = int(room_id)
     data['room_name'] = room_name
+    data['data_type'] = "raw_mean"
+    timestamp = datetime.datetime.now()
+    data['timestamp'] =timestamp
     RSSI = []
     if len(gateway1) > 0:
         RSSI.append({"Gateway": "b5700000912bf", "RSSI-Value": RSSI_gateway1})
+    else:
+        RSSI.append({"Gateway": "b5700000912bf", "RSSI-Value": 0})
     if len(gateway2) > 0:
         RSSI.append({"Gateway": "b5700000912fd", "RSSI-Value": RSSI_gateway2})
+    else:
+        RSSI.append({"Gateway": "b5700000912fd", "RSSI-Value": 0})
     if len(gateway3) > 0:
         RSSI.append({"Gateway": "b5700000912d9", "RSSI-Value": RSSI_gateway3})
+    else:
+        RSSI.append({"Gateway": "b5700000912d9", "RSSI-Value": 0})
     if len(gateway4) > 0:
         RSSI.append({"Gateway": "b570000091ac9", "RSSI-Value": RSSI_gateway4})
+    else:
+        RSSI.append({"Gateway": "b570000091ac9", "RSSI-Value": 0})
     if len(gateway5) > 0:
         RSSI.append({"Gateway": "b5700000912d5", "RSSI-Value": RSSI_gateway5})
+    else:
+        RSSI.append({"Gateway": "b5700000912d5", "RSSI-Value": 0})
     if len(gateway6) > 0:
         RSSI.append({"Gateway": "b570000091291", "RSSI-Value": RSSI_gateway6})
+    else:
+        RSSI.append({"Gateway": "b570000091291", "RSSI-Value": 0})
     data['RSSI'] = RSSI
-    json_data = json.dumps(data)
-    collection.insert(json_data)
+    collection.insert(data)
     

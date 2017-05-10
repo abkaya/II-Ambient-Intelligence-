@@ -2,7 +2,8 @@
 from pymongo import MongoClient
 
 #Connect to MongoDB
-client = MongoClient('localhost', 27017)
+# client = MongoClient('localhost', 27017)
+client = MongoClient('127.0.0.1', 27017)
 db = client['Ambient']
 collection = db['V-blok']
 

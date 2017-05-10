@@ -139,10 +139,9 @@ nodeRSSI.append(round(sum(gateway4) / float(len(gateway4))))
 nodeRSSI.append(round(sum(gateway5) / float(len(gateway5))))
 nodeRSSI.append(round(sum(gateway6) / float(len(gateway6))))
 
-
 #Print Location
 k = 1
 neighbors = getNeighbors(trainSet, nodeRSSI, 1)
 print "You are in"
 print "Room: " + neighbors[0][6]
-print "ID: " + neighbors[0][7]
+print "ID: " + str(neighbors[0][7])
