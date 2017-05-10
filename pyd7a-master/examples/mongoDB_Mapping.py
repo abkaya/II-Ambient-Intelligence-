@@ -1,9 +1,14 @@
-from sys import argv
-import paho.mqtt.client as mqtt
+import datetime
 import json
 import os
+import sys
+from sys import argv
+
+import paho.mqtt.client as mqtt
 from pymongo import MongoClient
-import datetime
+
+import numpy
+
 prompt = '> '
 
 # b5700000912bf
@@ -19,6 +24,9 @@ gateway5 = []
 # b570000091291
 gateway6 = []
 
+# Willem --> "node": "b57000009128e"
+# Frederik --> "node": "b57000009127b"
+# Michiel --> "node": "b5700000913b8"
 
 def on_connect(mqttc, obj, flags, rc):
     print("rc: " + str(rc))
@@ -93,19 +101,17 @@ print
 client = MongoClient('localhost', 27017)
 db = client['Ambient']
 collection = db['V-blok']
+  
 
-room_name = "1"
+# CREATE ROOM
+print "Give room name:"
+room_name = raw_input(prompt)
+
+room_id = 1
+
 while True:
+    raw_input(prompt)
     json_data = []
-
-    # CREATE ROOM
-    print "Give room name:"
-    room_name = raw_input(prompt)
-    if room_name == "0":
-        break
-    print "Give room id:"
-    room_id = raw_input(prompt)
-
     # Create connection
     print("Create connection....")
     mqttc.connect(MQTT_server, 1883, 60)
@@ -113,21 +119,33 @@ while True:
     print("Connection created....\n")
 
     count = 0
-    while count < 60:
+    while count < 20:
         mqttc.loop()
-
+        
     if len(gateway1) > 0:
-        RSSI_gateway1 = round(sum(gateway1) / float(len(gateway1)))
+        # RSSI_gateway1 = round(sum(gateway1) / float(len(gateway1)))
+        a = numpy.array(gateway1)
+        RSSI_gateway1 = numpy.median(a)
     if len(gateway2) > 0:
-        RSSI_gateway2 = round(sum(gateway2) / float(len(gateway2)))
+        # RSSI_gateway2 = round(sum(gateway2) / float(len(gateway2)))
+        a = numpy.array(gateway2)
+        RSSI_gateway2 = numpy.median(a)
     if len(gateway3) > 0:
-        RSSI_gateway3 = round(sum(gateway3) / float(len(gateway3)))
+        # RSSI_gateway3 = round(sum(gateway3) / float(len(gateway3)))
+        a = numpy.array(gateway3)
+        RSSI_gateway3 = numpy.median(a)
     if len(gateway4) > 0:
-        RSSI_gateway4 = round(sum(gateway4) / float(len(gateway4)))
+        # RSSI_gateway4 = round(sum(gateway4) / float(len(gateway4)))
+        a = numpy.array(gateway4)
+        RSSI_gateway4 = numpy.median(a)
     if len(gateway5) > 0:
-        RSSI_gateway5 = round(sum(gateway5) / float(len(gateway5)))
+        # RSSI_gateway5 = round(sum(gateway5) / float(len(gateway5)))
+        a = numpy.array(gateway5)
+        RSSI_gateway5 = numpy.median(a)
     if len(gateway6) > 0:
-        RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
+        # RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
+        a = numpy.array(gateway6)
+        RSSI_gateway6 = numpy.median(a)
 
     data = {}
     data['room_id'] = int(room_id)
@@ -162,4 +180,4 @@ while True:
         RSSI.append({"Gateway": "b570000091291", "RSSI-Value": 0})
     data['RSSI'] = RSSI
     collection.insert(data)
-    
+    room_id = room_id + 1
