@@ -1,0 +1,3 @@
+#Number temperature "temp [%.1f]" {mqtt="<[opehabmqtt:temperature:state:default]"}
+Number temperature "temp7 [%.1f]" {mqtt="<[opehabmqtt:tempdash7:state:default]"}
+Number magneticfield "magnetometer [%.1f]" {mqtt="<[opehabmqtt:magnetometer:state:default]"}
