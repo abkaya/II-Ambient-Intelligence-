@@ -35,9 +35,6 @@ def on_connect(mqttc, obj, flags, rc):
 
 
 def on_message(mqttc, obj, msg):
-    # Default incoming message
-    #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
-
     # MESSAGE TO JSON
     payload = msg.payload
     payload_JSON = json.loads(payload)
