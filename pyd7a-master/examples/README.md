@@ -18,7 +18,7 @@ Python script with the basic commands to work with mongoDB
 
 Python script to map the data to a mongoDB collection.
 
-###How To use:
+### How To use:
 First give the room name, for example V315 then enter
 
 Then enter again, the program will map data now.
@@ -29,4 +29,6 @@ Tip: Map 2-3 times on each step
 
 ## localization_rpi.py
 
-Python script with the basic commands to work with mongoDB
+Python script to localize the node, check if the right mongodb and mqtt server is connected
+
+To use this on windows pc a SSH tunnel is required, use putty for this.
