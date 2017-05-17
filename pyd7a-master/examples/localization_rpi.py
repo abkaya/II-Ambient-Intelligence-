@@ -2,6 +2,7 @@ import json
 import math
 import operator
 import time
+from shutil import copyfile
 from sys import argv
 
 import paho.mqtt.client as mqtt
@@ -45,8 +46,7 @@ def on_message(mqttc1, obj, msg):
         gatewayID = str(payload_JSON["gateway"])
         
         # Filter on gateway
-        if gatewayID == 'b5700000912bf':
-           
+        if gatewayID == 'b5700000912bf':       
             # Check if gateway data was already received
             if (len(gateway1) > 0):
                 fingerprinting()
@@ -182,12 +182,14 @@ def fingerprinting():
     neighbors = getNeighbors(trainSet, testInstance, k)
     current_room = str(neighbors[0][6])
     global previous_room
+    
     if(previous_room != current_room):
-        print "You are in"
         print "Room: " + current_room
-        print
         #json_loc = {"node_id": nodeid, "room_name": current_room}  
-        #mqttc2.publish(MQTT_topic_RPi, json.dumps(json_loc))
+        mqttc2.connect(MQTT_RPi, 1883, 60)
+        mqttc2.publish(MQTT_topic_RPi, current_room)
+        mqttc2.disconnect()
+        copyfile('/home/pi/localization/images/' + current_room + '.png', '/etc/openhab2/html/localization/current.png')
         previous_room = current_room
 
 # Connect to MongoDB
@@ -228,7 +230,6 @@ print
 print("Create connections....")
 mqttc1.connect(MQTT_server, 1883, 60)
 mqttc1.subscribe(MQTT_topic)
-#mqttc2.connect(MQTT_RPi, 1883, 60)
 print("Connection created....\n")
 
 # Program loop
