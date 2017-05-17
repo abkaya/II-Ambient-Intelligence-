@@ -1,6 +1,7 @@
 import json
 import math
 import operator
+import time
 from sys import argv
 
 import paho.mqtt.client as mqtt
@@ -49,75 +50,54 @@ def on_message(mqttc1, obj, msg):
             # Check if gateway data was already received
             if (len(gateway1) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway1.append(RSSI_value)
             else:
                 gateway1.append(RSSI_value)
         if gatewayID == 'b5700000912fd':
             if (len(gateway2) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway2.append(RSSI_value)
             else:
                 gateway2.append(RSSI_value)
         if gatewayID == 'b5700000912d9':
             if (len(gateway3) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway3.append(RSSI_value)
             else:
                 gateway3.append(RSSI_value)
         if gatewayID == 'b570000091ac9':
             if (len(gateway4) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway4.append(RSSI_value)
             else:
                 gateway4.append(RSSI_value)
         if gatewayID == 'b5700000912d5':
             if (len(gateway5) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway5.append(RSSI_value)
             else:
                 gateway5.append(RSSI_value)
         if gatewayID == 'b570000091291':
             if (len(gateway6) > 0):
                 fingerprinting()
-                del gateway1[:]
-                del gateway2[:]
-                del gateway3[:]
-                del gateway4[:]
-                del gateway5[:]
-                del gateway6[:]
+                clearGateways()
                 gateway6.append(RSSI_value)
             else:
                 gateway6.append(RSSI_value)
+
+# Clear gateway data
+def clearGateways():
+    del gateway1[:]
+    del gateway2[:]
+    del gateway3[:]
+    del gateway4[:]
+    del gateway5[:]
+    del gateway6[:]
 
 # MQTT on_publish
 def on_publish(mqttc1, obj, mid):
@@ -152,6 +132,7 @@ def getNeighbors(trainingSet, testInstance, k):
     return neighbors
 
 # kNN algorithm - fingerprinting
+previous_room = ""
 def fingerprinting():
 
     # Get TrainingData
@@ -199,10 +180,15 @@ def fingerprinting():
         testInstance.append(0)
     k = 3
     neighbors = getNeighbors(trainSet, testInstance, k)
-    print "You are in"
-    print "Room: " + str(neighbors[0][6])
-    print
-    mqttc2.publish(MQTT_topic_RPi,str(neighbors[0][6]))
+    current_room = str(neighbors[0][6])
+    global previous_room
+    if(previous_room != current_room):
+        print "You are in"
+        print "Room: " + current_room
+        print
+        #json_loc = {"node_id": nodeid, "room_name": current_room}  
+        #mqttc2.publish(MQTT_topic_RPi, json.dumps(json_loc))
+        previous_room = current_room
 
 # Connect to MongoDB
 client = MongoClient('localhost', 27017)
@@ -242,7 +228,7 @@ print
 print("Create connections....")
 mqttc1.connect(MQTT_server, 1883, 60)
 mqttc1.subscribe(MQTT_topic)
-mqttc2.connect(MQTT_RPi, 1883, 60)
+#mqttc2.connect(MQTT_RPi, 1883, 60)
 print("Connection created....\n")
 
 # Program loop
