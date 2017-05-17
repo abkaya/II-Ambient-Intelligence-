@@ -20,6 +20,7 @@ gateway4 = []
 gateway5 = []
 # b570000091291
 gateway6 = []
+
 def on_connect(mqttc, obj, flags, rc):
     print("rc: " + str(rc))
 def on_message(mqttc, obj, msg):
@@ -143,15 +144,7 @@ def fingerprinting():
         finger.append(room_name)
         finger.append(room_id)
         trainSet.append(finger)
-    # trainSet = []
-    # with open('V-blok.JSON') as json_data:
-    #     d = json.load(json_data)
-    #     for x in range(0, len(d)):
-    #         trainSetTest = [int(d[x]['RSSI'][0]['RSSI-Value']), int(d[x]['RSSI'][1]['RSSI-Value']), int(d[x]['RSSI'][2]['RSSI-Value']),
-    #                         int(d[x]['RSSI'][3]['RSSI-Value']), int(d[x]['RSSI'][4]['RSSI-Value']), int(d[x]['RSSI'][5]['RSSI-Value']),
-    #                         d[x]['room_name'], d[x]['room_id']]
-    #         trainSet.append(trainSetTest)
-    # print "trainSet: " + str(trainSet)
+
     testInstance = []
     if len(gateway1) > 0:
         testInstance.append(int(gateway1[0]))
@@ -178,7 +171,7 @@ def fingerprinting():
     else:
         testInstance.append(0)
     # print "testInstance: " + str(testInstance)
-    k = 1
+    k = 3
     neighbors = getNeighbors(trainSet, testInstance, k)
     print "You are in"
     print "Room: " + str(neighbors[0][6])

@@ -4,10 +4,9 @@ import os
 import sys
 from sys import argv
 
+import numpy
 import paho.mqtt.client as mqtt
 from pymongo import MongoClient
-
-import numpy
 
 prompt = '> '
 
@@ -28,6 +27,9 @@ gateway6 = []
 # Frederik --> "node": "b57000009127b"
 # Michiel --> "node": "b5700000913b8"
 
+#Max messages for mapping
+maxMapMessages = 20
+
 def on_connect(mqttc, obj, flags, rc):
     print("rc: " + str(rc))
 
@@ -40,11 +42,13 @@ def on_message(mqttc, obj, msg):
     payload = msg.payload
     payload_JSON = json.loads(payload)
 
-    if(payload_JSON["node"] == nodeid):
+    
+    if(payload_JSON["node"] == nodeid): #Filter on node
         print payload_JSON
         RSSI_value = payload_JSON["link_budget"]
         gatewayID = str(payload_JSON["gateway"])
 
+        #Filter on gateway
         if gatewayID == 'b5700000912bf':
             gateway1.append(RSSI_value)
         if gatewayID == 'b5700000912fd':
@@ -58,6 +62,7 @@ def on_message(mqttc, obj, msg):
         if gatewayID == 'b570000091291':
             gateway6.append(RSSI_value)
 
+        #Counter for max messages
         global count
         count = count + 1
 
@@ -69,7 +74,6 @@ def on_publish(mqttc, obj, mid):
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
-
 
 def on_log(mqttc, obj, level, string):
     print(string)
@@ -106,47 +110,45 @@ collection = db['V-blok']
 # CREATE ROOM
 print "Give room name:"
 room_name = raw_input(prompt)
-
 room_id = 1
 
 while True:
+    #Enter before mapping
     raw_input(prompt)
     json_data = []
+   
     # Create connection
     print("Create connection....")
     mqttc.connect(MQTT_server, 1883, 60)
     mqttc.subscribe(MQTT_topic)
     print("Connection created....\n")
 
+    #Read MQTT messages
     count = 0
-    while count < 20:
+    while count < maxMapMessages:
         mqttc.loop()
-        
+
+    #Take the median of each gateway    
     if len(gateway1) > 0:
-        # RSSI_gateway1 = round(sum(gateway1) / float(len(gateway1)))
         a = numpy.array(gateway1)
         RSSI_gateway1 = numpy.median(a)
     if len(gateway2) > 0:
-        # RSSI_gateway2 = round(sum(gateway2) / float(len(gateway2)))
         a = numpy.array(gateway2)
         RSSI_gateway2 = numpy.median(a)
     if len(gateway3) > 0:
-        # RSSI_gateway3 = round(sum(gateway3) / float(len(gateway3)))
         a = numpy.array(gateway3)
         RSSI_gateway3 = numpy.median(a)
     if len(gateway4) > 0:
-        # RSSI_gateway4 = round(sum(gateway4) / float(len(gateway4)))
         a = numpy.array(gateway4)
         RSSI_gateway4 = numpy.median(a)
     if len(gateway5) > 0:
-        # RSSI_gateway5 = round(sum(gateway5) / float(len(gateway5)))
         a = numpy.array(gateway5)
         RSSI_gateway5 = numpy.median(a)
     if len(gateway6) > 0:
-        # RSSI_gateway6 = round(sum(gateway6) / float(len(gateway6)))
         a = numpy.array(gateway6)
         RSSI_gateway6 = numpy.median(a)
 
+    #Create the mapping JSON
     data = {}
     data['room_id'] = int(room_id)
     data['room_name'] = room_name
