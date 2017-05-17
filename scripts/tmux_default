@@ -1,0 +1,46 @@
+#!/bin/bash
+# This is a bash script to create tmux sessions, panes and windows in order to
+# create an overview of all terminal sessions we'd normally switch between
+# It also serves as a startup session in case of a pi reboot
+#
+# note to self: tmux's format for -t parameter targets: [session]:[window].[pane]
+
+SES='default'
+tmux has-session -t $SES &> /dev/null
+
+if [[ $? != 0 ]] 
+ then
+    # create a new session and window in detached mode named default
+    tmux new-session -s $SES -n PIMUX -d
+    # send a command and use C-m as carriage return
+    tmux send-keys -t $SES 'cd /etc/openhab2/' C-m
+    # split the new window horizontally in two panes, creating (0:0.0 and) 0:0.1 on the right
+    tmux split-window -h -p 60 -t $SES
+    
+    # now we'll send commands to the target pane
+    # this follows the format: [session]:[window].[pane]
+    tmux send-keys -t $SES:0.1 'cd ~/' C-m    
+    tmux send-keys -t $SES:0.1 'cd ~/flashelf' C-m
+    
+    # split to get the desired panes and send commands to these panes
+    # split vertically to create the D7 Modem pane and send commands to run the modem
+    tmux split-window -v -t $SES:0.1
+    tmux send-keys -t $SES:0.2 'cd ~/pyd7a;PYTHONPATH=. python examples/modem_example.py -d /dev/ttyACM1' C-m
+    
+    # split 0.1 horizontally to get the st-util pane (0:0.3) and start it 
+    tmux split-window -h -t $SES:0.1
+    tmux send-keys -t $SES:0.3 'st-util' C-m
+
+    # split 0.2 horizontally to get the mqtt pane (0:0.4) in which we can subscribe to various topics
+    # it might actually be smarter to have a new window with all mqtt subs enlisted. [TODO] 
+    tmux split-window -h -t $SES:0.2
+    tmux send-keys -t $SES:0.4 'mosquitto_sub -d -t sensordata/magnetometerX' C-m
+
+    # aplit the mqtt pane vertically to get a tiny pane (0:0.5) in which we'll start the
+    # pi camera script
+    tmux split-window -v -p 30 -t $SES:0.4
+    tmux send-keys -t $SES:0.5 'cd /etc/openhab2/html/Camera' C-m
+    tmux send-keys -t $SES:0.5 'sudo python3 takeSnap.py' C-m
+fi
+
+tmux attach -t $SES

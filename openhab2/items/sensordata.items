@@ -1,0 +1,12 @@
+Group All
+
+Number magfieldx "x-axis [%.1f µT]" <magfieldx> { mqtt = "<[openhabmqtt:sensordata/magnetometerX:state:default]" }
+Number magfieldy "y-axis [%.1f µT]" <magfieldy> { mqtt = "<[openhabmqtt:sensordata/magnetometerY:state:default]" }
+Number magfieldz "z-axis [%.1f µT]" <magfieldz> { mqtt = "<[openhabmqtt:sensordata/magnetometerZ:state:default]" }
+Number temp "Temperature _sensor [%.1f °C]" <temp> { mqtt = "<[openhabmqtt:sensordata/temperature:state:default]" }
+
+String Weather_Condition "Antwerp [%s]" <fog> (Weather) { weather = "locationId=Home, type=condition, property=commonId" }
+String Weather_Formatted_Condition "Antwerp [MAP(weather_en.map):%s]" <fog> (Weather) { weather = "locationId=Home, type=condition, property=commonId" }
+Number Weather_Temp "Today [%.2f °C]" <temperature> (Weather) { weather = "locationId=Home, type=temperature, property=feel" }
+
+Number magfield_chart <chart>
