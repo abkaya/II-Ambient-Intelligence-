@@ -190,6 +190,9 @@ def fingerprinting():
         mqttc2.publish(MQTT_topic_RPi, current_room)
         mqttc2.disconnect()
         copyfile('/home/pi/localization/images/' + current_room + '.png', '/etc/openhab2/html/localization/current.png')
+        bashCommand="sudo convert /etc/openhab2/html/localization/current.png -pointsize 18 -fill #00CCFF -annotate +600+50 " +  'Current Room: ' +current_room+ " /etc/openhab2/html/localization/current.png"
+        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
         previous_room = current_room
 
 # Connect to MongoDB
