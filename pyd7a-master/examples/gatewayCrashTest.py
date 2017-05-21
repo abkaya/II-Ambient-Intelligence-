@@ -74,6 +74,7 @@ count = 0
 while count < 500:
     mqttc.loop()
 
-print "Totaal aantal gateways gevonden: " + str(len(gateways))
-print "Gateways"
+print "Total gateways: " + str(len(gateways))
+print
+print "Gateway Names:"
 print gateways 
