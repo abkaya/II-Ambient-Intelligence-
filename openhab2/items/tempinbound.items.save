@@ -1,2 +1,0 @@
-Number temperature "temp [%.1f]" {mqtt="<[opehabmqtt:temperature:state:default]"}Number temperature "temp [%.1f]" {mqtt="<[opehabmqtt:temperature:state:default]"}
-Number temperature "temp [%.1f]" {mqtt="<[opehabmqtt:temperature:state:default]"}
