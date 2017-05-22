@@ -33,25 +33,21 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
 
-/* USER CODE BEGIN Includes */
+/* Includes ------------------------------------------------------------------*/
 
-/* USER CODE END Includes */
+
+
+/* Private variables ---------------------------------------------------------*/
+
+#define RXBUFFERSIZE                      10
+#define DASH7_ARRAYLENGTH                 3
+#define DASH7_DATALENGTH                  DASH7_ARRAYLENGTH * 2
+#define ALP_LENGTH                        12 + DASH7_DATALENGTH
+
 
 /* Private define ------------------------------------------------------------*/
 
-/* USER CODE BEGIN Private defines */
 
-/* USER CODE END Private defines */
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-*/ 
 
 #endif /* __MAIN_H */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
