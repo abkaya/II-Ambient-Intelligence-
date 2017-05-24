@@ -9,11 +9,17 @@ prompt = '> '
 # Frederik --> "node": "b57000009127b"
 # Michiel --> "node": "b5700000913b8"
 
-gateways = []
+gateways = ["b5700000912bf","b5700000912fd", "b5700000912d9","b570000091ac9","b5700000912d5", "b570000091291"]
+
+gateways_found = []
+gateways_missing = []
+
+def diff(first, second):
+    second = set(second)
+    return [item for item in first if item not in second]
 
 def on_connect(mqttc, obj, flags, rc):
     print("rc: " + str(rc))
-
 
 def on_message(mqttc, obj, msg):
     # MESSAGE TO JSON
@@ -22,8 +28,8 @@ def on_message(mqttc, obj, msg):
 
     if(payload_JSON["node"] == nodeid):
         print payload_JSON
-        if payload_JSON["gateway"] not in gateways:
-            gateways.append(payload_JSON["gateway"])
+        if payload_JSON["gateway"] not in gateways_found:
+            gateways_found.append(payload_JSON["gateway"])
         global count
         count = count + 1
 
@@ -74,7 +80,10 @@ count = 0
 while count < 500:
     mqttc.loop()
 
-print "Total gateways: " + str(len(gateways))
+gateways_missing = diff(gateways,gateways_found)
+
+print "Gateway Found: " + str(len(gateways_found))
+print gateways_found
 print
-print "Gateway Names:"
-print gateways 
+print "Missing Gateways: " + str(len(gateways_missing))
+print gateways_missing

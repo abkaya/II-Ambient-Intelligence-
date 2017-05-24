@@ -200,7 +200,7 @@ def fingerprinting():
         #bashCommand="sudo convert /etc/openhab2/html/localization/current.png -pointsize 18 -fill #00CCFF -annotate +600+50 " +  'Current Room: ' +current_room+ " /etc/openhab2/html/localization/current.png"
         #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         #output, error = process.communicate()
-        #previous_room = current_room
+        previous_room = current_room
 
 # Connect to MongoDB
 client = MongoClient('localhost', 27017)
