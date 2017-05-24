@@ -118,6 +118,13 @@ def euclideanDistance(instance1, instance2, length):
         distance += pow((instance1[x] - instance2[x]), 2)
     return math.sqrt(distance)
 
+# kNN algorithm - manhatten
+def euclideanDistance(instance1, instance2, length):
+    distance = 0
+    for x in range(length):
+        distance += abs(instance1[x] - instance2[x])
+    return distance
+
 # kNN algorithm - get neighbors of mobile node
 def getNeighbors(trainingSet, testInstance, k):
     distances = []
@@ -186,14 +193,14 @@ def fingerprinting():
     if(previous_room != current_room):
         print "Room: " + current_room
         #json_loc = {"node_id": nodeid, "room_name": current_room}  
-        mqttc2.connect(MQTT_RPi, 1883, 60)
-        mqttc2.publish(MQTT_topic_RPi, current_room)
-        mqttc2.disconnect()
-        copyfile('/home/pi/localization/images/' + current_room + '.png', '/etc/openhab2/html/localization/current.png')
-        bashCommand="sudo convert /etc/openhab2/html/localization/current.png -pointsize 18 -fill #00CCFF -annotate +600+50 " +  'Current Room: ' +current_room+ " /etc/openhab2/html/localization/current.png"
-        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-        output, error = process.communicate()
-        previous_room = current_room
+        #mqttc2.connect(MQTT_RPi, 1883, 60)
+        #mqttc2.publish(MQTT_topic_RPi, current_room)
+        #mqttc2.disconnect()
+        #copyfile('/home/pi/localization/images/' + current_room + '.png', '/etc/openhab2/html/localization/current.png')
+        #bashCommand="sudo convert /etc/openhab2/html/localization/current.png -pointsize 18 -fill #00CCFF -annotate +600+50 " +  'Current Room: ' +current_room+ " /etc/openhab2/html/localization/current.png"
+        #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+        #output, error = process.communicate()
+        #previous_room = current_room
 
 # Connect to MongoDB
 client = MongoClient('localhost', 27017)
