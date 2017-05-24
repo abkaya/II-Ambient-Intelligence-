@@ -119,7 +119,7 @@ def euclideanDistance(instance1, instance2, length):
     return math.sqrt(distance)
 
 # kNN algorithm - manhatten
-def euclideanDistance(instance1, instance2, length):
+def manhattenDistance(instance1, instance2, length):
     distance = 0
     for x in range(length):
         distance += abs(instance1[x] - instance2[x])
@@ -130,7 +130,7 @@ def getNeighbors(trainingSet, testInstance, k):
     distances = []
     length = len(testInstance)-1
     for x in range(len(trainingSet)):
-        dist = euclideanDistance(testInstance, trainingSet[x], length)
+        dist = manhattenDistance(testInstance, trainingSet[x], length)
         distances.append((trainingSet[x], dist))
     distances.sort(key=operator.itemgetter(1))
     neighbors = []
