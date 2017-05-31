@@ -34,7 +34,6 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_log(mqttc, obj, level, string):
     print(string)
 
-
 # CLIENT INFO
 clientid = "Willem-develop"
 clientprotocol = 3  # MQTTv3.1

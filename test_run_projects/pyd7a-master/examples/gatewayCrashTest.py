@@ -1,7 +1,9 @@
-from sys import argv
-import paho.mqtt.client as mqtt
 import json
 import os
+from sys import argv
+
+import paho.mqtt.client as mqtt
+
 prompt = '> '
 
 # Node ID:
