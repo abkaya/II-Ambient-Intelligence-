@@ -16,6 +16,7 @@ mag_value = []
 pitch = []
 roll = []
 yaw = []
+bar = []
 
 #Max messages for mapping
 maxMapMessages = 20
