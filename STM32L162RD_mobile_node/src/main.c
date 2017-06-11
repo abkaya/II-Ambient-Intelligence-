@@ -77,7 +77,6 @@ int main(void) {
 		//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
 		// essentially makes the RGB leds active low
 		for (i = 0; i < 3; i++) {
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
 			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			uint8_t * alpCmd = getALP(testD7);
 			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),

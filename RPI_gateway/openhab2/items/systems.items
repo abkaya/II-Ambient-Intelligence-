@@ -1,0 +1,1 @@
+Number System_Temperature_CPU "CPU temp [%.3f]" <temperature> (System) { channel="exec:command:readtemp:run" }
