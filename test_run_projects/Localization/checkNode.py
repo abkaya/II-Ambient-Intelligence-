@@ -9,7 +9,6 @@ prompt = '> '
 # Frederik --> "node": "b57000009127b"
 # Michiel --> "node": "b5700000913b8"
 
-gateways = []
 
 def on_connect(mqttc, obj, flags, rc):
     print("rc: " + str(rc))
@@ -22,10 +21,7 @@ def on_message(mqttc, obj, msg):
 
     if(payload_JSON["node"] == nodeid):
         print payload_JSON
-        if payload_JSON["gateway"] not in gateways:
-            gateways.append(payload_JSON["gateway"])
-        global count
-        count = count + 1
+
 
 def on_publish(mqttc, obj, mid):
     print("mid: " + str(mid))
@@ -37,7 +33,6 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 
 def on_log(mqttc, obj, level, string):
     print(string)
-
 
 # CLIENT INFO
 clientid = "Willem-develop"
@@ -70,11 +65,4 @@ mqttc.connect(MQTT_server, 1883, 60)
 mqttc.subscribe(MQTT_topic)
 print("Connection created....\n")
 
-count = 0
-while count < 500:
-    mqttc.loop()
-
-print "Total gateways: " + str(len(gateways))
-print
-print "Gateway Names:"
-print gateways 
+mqttc.loop_forever()

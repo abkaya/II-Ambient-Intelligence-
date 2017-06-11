@@ -7,13 +7,13 @@ from sys import argv
 
 import paho.mqtt.client as mqtt
 from pymongo import MongoClient
-
 prompt = '> '
 
 # MOBILE NODES
 # Willem --> "node": "b57000009128e"
 # Frederik --> "node": "b57000009127b"
 # Michiel --> "node": "b5700000913b8"
+nodeid = "b57000009128e"
 
 # GATEWAYS
 # b5700000912bf
@@ -28,6 +28,17 @@ gateway4 = []
 gateway5 = []
 # b570000091291
 gateway6 = []
+
+k = 5
+
+#Connections
+clientid = "Willem-develop"
+group_name = "Team-Cool"
+collection_name = "V-Blok"
+MQTT_server = "backend.idlab.uantwerpen.be" #Dont't change this
+MQTT_topic = "/localisation/DASH7" #Dont't change this
+MQTT_RPi = "localhost" #Dont't change this
+MQTT_topic_RPi = "/rpi/localization" #Dont't change this
 
 # MQTT on_connect
 def on_connect(mqttc1, obj, flags, rc):
@@ -151,12 +162,12 @@ def fingerprinting():
     for fi in d:
         finger = []
         room_name = fi["room_name"]
-        room_id = fi["room_id"]
+        box = str(fi["boxid"]) + "_" + str(fi["fingerid"])
         RSSI_array = fi["RSSI"]
         for RSSI in RSSI_array:
             finger.append(RSSI["RSSI-Value"])
         finger.append(room_name)
-        finger.append(room_id)
+        finger.append(box)
         trainSet.append(finger)
 
     # Get TestData
@@ -185,13 +196,14 @@ def fingerprinting():
         testInstance.append(int(gateway6[0]))
     else:
         testInstance.append(0)
-    k = 3
+
     neighbors = getNeighbors(trainSet, testInstance, k)
     current_room = str(neighbors[0][6])
+    current_box = str(neighbors[0][7])
     global previous_room
     
     if(previous_room != current_room):
-        print "Room: " + current_room
+        print "Room: " + current_room + " Box: " + current_box
         #json_loc = {"node_id": nodeid, "room_name": current_room}  
         #mqttc2.connect(MQTT_RPi, 1883, 60)
         #mqttc2.publish(MQTT_topic_RPi, current_room)
@@ -200,19 +212,18 @@ def fingerprinting():
         #bashCommand="sudo convert /etc/openhab2/html/localization/current.png -pointsize 18 -fill #00CCFF -annotate +600+50 " +  'Current Room: ' +current_room+ " /etc/openhab2/html/localization/current.png"
         #process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         #output, error = process.communicate()
-        previous_room = current_room
+        #previous_room = current_room
+    
+    #time.sleep(2)
 
 # Connect to MongoDB
 client = MongoClient('localhost', 27017)
-db = client['Ambient']
-collection = db['V-blok']
+db = client[group_name]
+collection = db[collection_name]
 
 # MQTT - SERVER INFO
-clientid = "Willem-develop"
-clientprotocol = 3  # MQTTv3.1
-mqttc1 = mqtt.Client(client_id=clientid, protocol=clientprotocol)
-mqttc2 = mqtt.Client(client_id=clientid, protocol=clientprotocol)
-nodeid = "b57000009128e"
+mqttc1 = mqtt.Client(client_id=clientid, protocol=3)
+mqttc2 = mqtt.Client(client_id=clientid, protocol=3)
 
 # MQTT - SETUP METHODS
 mqttc1.on_message = on_message
@@ -221,16 +232,12 @@ mqttc1.on_publish = on_publish
 mqttc1.on_subscribe = on_subscribe
 
 # MQTT - SERVER INFO
-MQTT_server = "backend.idlab.uantwerpen.be"
-MQTT_topic = "/localisation/DASH7"
 print("Client: " + clientid)
 print("Server: " + MQTT_server)
 print("Topic: " + MQTT_topic)
 print
 
 # MQTT - RPI INFO
-MQTT_RPi = "localhost"
-MQTT_topic_RPi = "/rpi/localization"
 print("Client: " + clientid)
 print("Server: " + MQTT_RPi)
 print("Topic: " + MQTT_topic_RPi)
