@@ -35,6 +35,7 @@
 #include "stm32l1xx_hal.h"
 #include <stdlib.h>
 #include <string.h>
+#include "MPL3115A2.h"
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
@@ -63,29 +64,49 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_USART1_UART_Init();
 
+	init_MPL3115A2(&hi2c1);
+
+
 	int i;
 	int testD7[3];
 	testD7[0] = 5;
 	testD7[1] = 6;
 	testD7[2] = 7;
 
+	// 5:green, 6:red, 7:blue
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+	//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
+	// essentially makes the RGB leds active low
 	while (1) {
-		// 5:green, 6:red, 7:blue
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-		//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
-		// essentially makes the RGB leds active low
-		for (i = 0; i < 3; i++) {
+
+		/*for (i = 0; i < 3; i++) {
+		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		 uint8_t * alpCmd = getALP(testD7);
+		 HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
+		 HAL_MAX_DELAY);
+		 free(alpCmd);
+		 HAL_Delay(100);
+		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		 HAL_Delay(4000);
+		 }
+		 */
+
+		int alt[2];
+		alt[0] = 19;
+		alt[1] = (int)readAltitude_MPL3115A2()+58;
+		if (alt[0] != -1) {
 			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			uint8_t * alpCmd = getALP(testD7);
+			uint8_t * alpCmd = getALP(alt);
 			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
-					HAL_MAX_DELAY);
+			HAL_MAX_DELAY);
 			free(alpCmd);
 			HAL_Delay(100);
 			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			HAL_Delay(4000);
+			HAL_Delay(2000);
 		}
+		HAL_Delay(2000);
 
 	}
 	/* USER CODE END 3 */
@@ -336,64 +357,14 @@ uint8_t * getALP(int data[]) {
 	 action: ReturnFileData: file-id=1, size=1, offset=0, length=2, data=[0, 1]
 	 */
 
-	   //printf("[ALP_LENGTH] = %d \n\n\r",7 + ALP_LENGTH);
-
-	    uint8_t ALPCommand[7 + ALP_LENGTH] = {
-	      0x41, 0x54, 0x24, 0x44, 0xc0, 0x00, ALP_LENGTH, // SERIAL
-	      0x34, 0x01, //TAG
-	      0x32, 0xd7, 0x01, 0x00, 0x10, 0x01, //FORWARD
-	      0x20, 0x01, 0x00, //CommnandLine
-	      DASH7_DATALENGTH //Data
-	    };
-
-	   int datacounter = 0;
-	   int arraycounter = 19;
-	   int dataHex[2];
-
-	   while(datacounter < DASH7_ARRAYLENGTH){
-
-	    dataToHex(data[datacounter],dataHex);
-
-	    ALPCommand[arraycounter] = dataHex[0];
-	    //printf("[SPOT0] = %d \n\n\r",arraycounter);
-	    //printf("[DATA%d:HEX0] = %X \n\r",datacounter,dataHex[0]);
-	    arraycounter++;
-
-	    ALPCommand[arraycounter] = dataHex[1];
-	    //printf("[SPOT1] = %d \n\n\r",arraycounter);
-	    //printf("[DATA%d:HEX1] = %X \n\n\r",datacounter,dataHex[1]);
-	    arraycounter++;
-	    datacounter++;
-
-	    dataHex[0] = 0;
-	    dataHex[1] = 0;
-	   }
-
-	  HAL_UART_Transmit(&huart1, (uint8_t*)ALPCommand, sizeof(ALPCommand),HAL_MAX_DELAY);
-
-	/*
-	//Don't forget to free ALPCommand's allocated memory wherever it is returned
-	uint8_t *ALPCommand = malloc(sizeof(uint8_t) * (7 + ALP_LENGTH));
-	ALPCommand[0] = 0x41;	// SERIAL
-	ALPCommand[1] = 0x54;
-	ALPCommand[2] = 0x24;
-	ALPCommand[3] = 0x44;
-	ALPCommand[4] = 0xC0;
-	ALPCommand[5] = 0x88;
-	ALPCommand[6] = ALP_LENGTH;
-	ALPCommand[7] = 0x34;	//TAG
-	ALPCommand[8] = 0x01;
-	ALPCommand[9] = 0x32;	//FORWARD
-	ALPCommand[10] = 0xd7;
-	ALPCommand[11] = 0x01;
-	ALPCommand[12] = 0x00;
-	ALPCommand[13] = 0x10;
-	ALPCommand[14] = 0x01;
-	ALPCommand[15] = 0x20;	//CommnandLine
-	ALPCommand[16] = 0x01;
-	ALPCommand[17] = 0x00;
-	ALPCommand[18] = DASH7_DATALENGTH;
-	//Data
+	//printf("[ALP_LENGTH] = %d \n\n\r",7 + ALP_LENGTH);
+	uint8_t ALPCommand[7 + ALP_LENGTH] = { 0x41, 0x54, 0x24, 0x44, 0xc0, 0x00,
+	ALP_LENGTH, // SERIAL
+			0x34, 0x01, //TAG
+			0x32, 0xd7, 0x01, 0x00, 0x10, 0x01, //FORWARD
+			0x20, 0x01, 0x00, //CommnandLine
+			DASH7_DATALENGTH //Data
+			};
 
 	int datacounter = 0;
 	int arraycounter = 19;
@@ -417,7 +388,57 @@ uint8_t * getALP(int data[]) {
 		dataHex[0] = 0;
 		dataHex[1] = 0;
 	}
-*/
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) ALPCommand, sizeof(ALPCommand),
+	HAL_MAX_DELAY);
+
+	/*
+	 //Don't forget to free ALPCommand's allocated memory wherever it is returned
+	 uint8_t *ALPCommand = malloc(sizeof(uint8_t) * (7 + ALP_LENGTH));
+	 ALPCommand[0] = 0x41;	// SERIAL
+	 ALPCommand[1] = 0x54;
+	 ALPCommand[2] = 0x24;
+	 ALPCommand[3] = 0x44;
+	 ALPCommand[4] = 0xC0;
+	 ALPCommand[5] = 0x88;
+	 ALPCommand[6] = ALP_LENGTH;
+	 ALPCommand[7] = 0x34;	//TAG
+	 ALPCommand[8] = 0x01;
+	 ALPCommand[9] = 0x32;	//FORWARD
+	 ALPCommand[10] = 0xd7;
+	 ALPCommand[11] = 0x01;
+	 ALPCommand[12] = 0x00;
+	 ALPCommand[13] = 0x10;
+	 ALPCommand[14] = 0x01;
+	 ALPCommand[15] = 0x20;	//CommnandLine
+	 ALPCommand[16] = 0x01;
+	 ALPCommand[17] = 0x00;
+	 ALPCommand[18] = DASH7_DATALENGTH;
+	 //Data
+
+	 int datacounter = 0;
+	 int arraycounter = 19;
+	 int dataHex[2];
+
+	 while (datacounter < DASH7_ARRAYLENGTH) {
+
+	 dataToHex(data[datacounter], dataHex);
+
+	 ALPCommand[arraycounter] = dataHex[0];
+	 //printf("[SPOT0] = %d \n\n\r",arraycounter);
+	 //printf("[DATA%d:HEX0] = %X \n\r",datacounter,dataHex[0]);
+	 arraycounter++;
+
+	 ALPCommand[arraycounter] = dataHex[1];
+	 //printf("[SPOT1] = %d \n\n\r",arraycounter);
+	 //printf("[DATA%d:HEX1] = %X \n\n\r",datacounter,dataHex[1]);
+	 arraycounter++;
+	 datacounter++;
+
+	 dataHex[0] = 0;
+	 dataHex[1] = 0;
+	 }
+	 */
 	return ALPCommand;
 
 }
