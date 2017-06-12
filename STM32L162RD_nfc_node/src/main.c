@@ -35,10 +35,33 @@
 #include "stm32l1xx_hal.h"
 #include <stdlib.h>
 #include <string.h>
+#include "PN532.h"
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart1;
+
+#define STARTUPNFC                      20
+#define STARTUPDASH7                    1400
+#define SENDTIMEDASH7					100
+#define LOOKFORCARDTIME					5000
+#define MAXTRIES						10
+//SMALL SIZE PACKAGE
+#define DASH7_DATALENGTH                        DASH7_ARRAYLENGTH * 2
+#define ALP_LENGTH                              12 + DASH7_DATALENGTH
+
+//LARGE SIZE PACKAGE
+#define DASH7_ARRAYLENGTH_LARGE                 8
+#define DASH7_DATALENGTH_LARGE                  DASH7_ARRAYLENGTH_LARGE * 2
+#define ALP_LENGTH_LARGE                        12 + DASH7_DATALENGTH_LARGE
+#define NELEMS(x)  (sizeof(x) / sizeof((x)[0])) // macro to get length of array
+
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
+volatile char flags = 0b00000001;
+uint8_t success;
+uint8_t uidLength;
+uint8_t failCounter = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -50,6 +73,9 @@ static void MX_USART1_UART_Init(void);
 void getBin(int num, char *str);
 static void dataToHex(int data, int dataHex[]);
 uint8_t * getALP(int data[]);
+
+void SleepMode(void);
+void StopMode(void);
 
 int main(void) {
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -63,31 +89,56 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_USART1_UART_Init();
 
-	int i;
-	int testD7[3];
-	testD7[0] = 5;
-	testD7[1] = 6;
-	testD7[2] = 7;
+	/* USER CODE BEGIN 2 */
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 
 	while (1) {
-		// 5:green, 6:red, 7:blue
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-		//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
-		// essentially makes the RGB leds active low
-		for (i = 0; i < 3; i++) {
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			uint8_t * alpCmd = getALP(testD7);
-			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
-					HAL_MAX_DELAY);
-			free(alpCmd);
-			HAL_Delay(100);
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			HAL_Delay(4000);
-		}
+		toggleWhite(250);
+		while (1) {
+			if ((flags & 0b00000001) == 1) {
+				//toggleBlue(20);
+				HAL_GPIO_WritePin(GPIOA, VNFC_Pin, GPIO_PIN_SET);
+				HAL_Delay(STARTUPNFC);
+				setI2CInterface_PN532(&hi2c1);
 
+				while (!getFirmwareVersion()) {
+					if (failCounter >= MAXTRIES) {
+						HAL_GPIO_WritePin(GPIOA, VNFC_Pin, GPIO_PIN_RESET);
+						while (1) {
+							toggleRed(50);
+							HAL_Delay(2000);
+						}
+					}
+					failCounter++;
+					HAL_GPIO_WritePin(GPIOA, VNFC_Pin, GPIO_PIN_RESET);
+					toggleRed(10);
+					HAL_Delay(200);
+					HAL_GPIO_WritePin(GPIOA, VNFC_Pin, GPIO_PIN_SET);
+					HAL_Delay(STARTUPNFC * 10);
+				}
+
+				SAMConfig();
+				uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };
+				success = readPassiveTargetID(PN532_MIFARE_ISO14443A, &uid[0],
+						&uidLength, LOOKFORCARDTIME);
+				int intUID[]={uid[0],uid[1],uid[2],uid[3],uid[4],uid[5],uid[6]};
+				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+				uint8_t * alpCmd = getALP(intUID);
+				HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
+				HAL_MAX_DELAY);
+				free(alpCmd);
+				HAL_Delay(100);
+				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+				HAL_Delay(2000);
+
+				flags = flags & 0b11111110;
+			}
+			SleepMode();
+		}
+		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
 
@@ -238,6 +289,83 @@ void Error_Handler(void) {
 	/* USER CODE END Error_Handler */
 }
 
+void SleepMode(void) {
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	//HAL_Delay(10);
+	//GPIO_InitTypeDef GPIO_InitStruct;
+	// MX_GPIO_Deinit();
+	//HAL_I2C_MspDeInit(&hi2c1);
+	HAL_SuspendTick();
+	__HAL_RCC_PWR_CLK_ENABLE()
+	;
+	//HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI); //sleep
+	//HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI); //lowPowerSleep
+	//HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI); //stopMode
+	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI); //LOWpowerstopMode
+	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+	/* Enter STANDBY mode */
+	//HAL_PWR_EnterSTANDBYMode();
+	HAL_ResumeTick();
+	// MX_USART1_UART_Init();*
+	//MX_USART2_UART_Init();
+	// MX_I2C1_Init();
+	// MX_GPIO_Init();
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	__HAL_GPIO_EXTI_CLEAR_IT(11);
+}
+void StopMode(void) {
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	HAL_Delay(10);
+	//GPIO_InitTypeDef GPIO_InitStruct;
+	// MX_GPIO_Deinit();
+	HAL_UART_DeInit(&huart1);
+	//HAL_I2C_MspDeInit(&hi2c1);
+	HAL_SuspendTick();
+	__HAL_RCC_PWR_CLK_ENABLE()
+	;
+	/* Request to enter SLEEP mode */
+	HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	HAL_ResumeTick();
+	// MX_USART1_UART_Init();
+	MX_USART2_UART_Init();
+	// MX_I2C1_Init();
+	// MX_GPIO_Init();
+	HAL_Delay(10);
+	__HAL_GPIO_EXTI_CLEAR_IT(11);
+	HAL_Delay(10);
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+	HAL_Delay(10);
+	__HAL_GPIO_EXTI_CLEAR_IT(11);
+	HAL_Delay(10);
+
+}
+
+void toggleRed(uint8_t time) {
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6); //RED LED
+	HAL_Delay(time);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6); //RED LED
+}
+void toggleGreen(uint8_t time) {
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); //GREEN LED
+	HAL_Delay(time);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); //GREEN LED
+}
+void toggleBlue(uint8_t time) {
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //BlUE LED
+	HAL_Delay(time);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //BlUE LED
+}
+void toggleWhite(uint8_t time) {
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); //RED LED
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6); //GREEN LED
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //BlUE LED
+	HAL_Delay(time);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); //RED LED
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6); //GREEN LED
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7); //BlUE LED
+}
+
 void getBin(int num, char *str) {
 	*(str + 15) = '\0';
 	int mask = 0x8000 << 1;
@@ -337,64 +465,14 @@ uint8_t * getALP(int data[]) {
 	 action: ReturnFileData: file-id=1, size=1, offset=0, length=2, data=[0, 1]
 	 */
 
-	   //printf("[ALP_LENGTH] = %d \n\n\r",7 + ALP_LENGTH);
-
-	    uint8_t ALPCommand[7 + ALP_LENGTH] = {
-	      0x41, 0x54, 0x24, 0x44, 0xc0, 0x00, ALP_LENGTH, // SERIAL
-	      0x34, 0x01, //TAG
-	      0x32, 0xd7, 0x01, 0x00, 0x10, 0x01, //FORWARD
-	      0x20, 0x01, 0x00, //CommnandLine
-	      DASH7_DATALENGTH //Data
-	    };
-
-	   int datacounter = 0;
-	   int arraycounter = 19;
-	   int dataHex[2];
-
-	   while(datacounter < DASH7_ARRAYLENGTH){
-
-	    dataToHex(data[datacounter],dataHex);
-
-	    ALPCommand[arraycounter] = dataHex[0];
-	    //printf("[SPOT0] = %d \n\n\r",arraycounter);
-	    //printf("[DATA%d:HEX0] = %X \n\r",datacounter,dataHex[0]);
-	    arraycounter++;
-
-	    ALPCommand[arraycounter] = dataHex[1];
-	    //printf("[SPOT1] = %d \n\n\r",arraycounter);
-	    //printf("[DATA%d:HEX1] = %X \n\n\r",datacounter,dataHex[1]);
-	    arraycounter++;
-	    datacounter++;
-
-	    dataHex[0] = 0;
-	    dataHex[1] = 0;
-	   }
-
-	  HAL_UART_Transmit(&huart1, (uint8_t*)ALPCommand, sizeof(ALPCommand),HAL_MAX_DELAY);
-
-	/*
-	//Don't forget to free ALPCommand's allocated memory wherever it is returned
-	uint8_t *ALPCommand = malloc(sizeof(uint8_t) * (7 + ALP_LENGTH));
-	ALPCommand[0] = 0x41;	// SERIAL
-	ALPCommand[1] = 0x54;
-	ALPCommand[2] = 0x24;
-	ALPCommand[3] = 0x44;
-	ALPCommand[4] = 0xC0;
-	ALPCommand[5] = 0x88;
-	ALPCommand[6] = ALP_LENGTH;
-	ALPCommand[7] = 0x34;	//TAG
-	ALPCommand[8] = 0x01;
-	ALPCommand[9] = 0x32;	//FORWARD
-	ALPCommand[10] = 0xd7;
-	ALPCommand[11] = 0x01;
-	ALPCommand[12] = 0x00;
-	ALPCommand[13] = 0x10;
-	ALPCommand[14] = 0x01;
-	ALPCommand[15] = 0x20;	//CommnandLine
-	ALPCommand[16] = 0x01;
-	ALPCommand[17] = 0x00;
-	ALPCommand[18] = DASH7_DATALENGTH;
-	//Data
+	//printf("[ALP_LENGTH] = %d \n\n\r",7 + ALP_LENGTH);
+	uint8_t ALPCommand[7 + ALP_LENGTH] = { 0x41, 0x54, 0x24, 0x44, 0xc0, 0x00,
+	ALP_LENGTH, // SERIAL
+			0x34, 0x01, //TAG
+			0x32, 0xd7, 0x01, 0x00, 0x10, 0x01, //FORWARD
+			0x20, 0x01, 0x00, //CommnandLine
+			DASH7_DATALENGTH //Data
+			};
 
 	int datacounter = 0;
 	int arraycounter = 19;
@@ -418,7 +496,57 @@ uint8_t * getALP(int data[]) {
 		dataHex[0] = 0;
 		dataHex[1] = 0;
 	}
-*/
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) ALPCommand, sizeof(ALPCommand),
+	HAL_MAX_DELAY);
+
+	/*
+	 //Don't forget to free ALPCommand's allocated memory wherever it is returned
+	 uint8_t *ALPCommand = malloc(sizeof(uint8_t) * (7 + ALP_LENGTH));
+	 ALPCommand[0] = 0x41;	// SERIAL
+	 ALPCommand[1] = 0x54;
+	 ALPCommand[2] = 0x24;
+	 ALPCommand[3] = 0x44;
+	 ALPCommand[4] = 0xC0;
+	 ALPCommand[5] = 0x88;
+	 ALPCommand[6] = ALP_LENGTH;
+	 ALPCommand[7] = 0x34;	//TAG
+	 ALPCommand[8] = 0x01;
+	 ALPCommand[9] = 0x32;	//FORWARD
+	 ALPCommand[10] = 0xd7;
+	 ALPCommand[11] = 0x01;
+	 ALPCommand[12] = 0x00;
+	 ALPCommand[13] = 0x10;
+	 ALPCommand[14] = 0x01;
+	 ALPCommand[15] = 0x20;	//CommnandLine
+	 ALPCommand[16] = 0x01;
+	 ALPCommand[17] = 0x00;
+	 ALPCommand[18] = DASH7_DATALENGTH;
+	 //Data
+
+	 int datacounter = 0;
+	 int arraycounter = 19;
+	 int dataHex[2];
+
+	 while (datacounter < DASH7_ARRAYLENGTH) {
+
+	 dataToHex(data[datacounter], dataHex);
+
+	 ALPCommand[arraycounter] = dataHex[0];
+	 //printf("[SPOT0] = %d \n\n\r",arraycounter);
+	 //printf("[DATA%d:HEX0] = %X \n\r",datacounter,dataHex[0]);
+	 arraycounter++;
+
+	 ALPCommand[arraycounter] = dataHex[1];
+	 //printf("[SPOT1] = %d \n\n\r",arraycounter);
+	 //printf("[DATA%d:HEX1] = %X \n\n\r",datacounter,dataHex[1]);
+	 arraycounter++;
+	 datacounter++;
+
+	 dataHex[0] = 0;
+	 dataHex[1] = 0;
+	 }
+	 */
 	return ALPCommand;
 
 }

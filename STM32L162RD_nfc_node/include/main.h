@@ -41,10 +41,34 @@
 /* Private variables ---------------------------------------------------------*/
 
 #define RXBUFFERSIZE                      10
-#define DASH7_ARRAYLENGTH                 3
+#define DASH7_ARRAYLENGTH                 4
 #define DASH7_DATALENGTH                  DASH7_ARRAYLENGTH * 2
 #define ALP_LENGTH                        12 + DASH7_DATALENGTH
 
+#define Button_Pin GPIO_PIN_13
+#define Button_GPIO_Port GPIOC
+#define USB_TX_Pin GPIO_PIN_2
+#define USB_TX_GPIO_Port GPIOA
+#define USB_RX_Pin GPIO_PIN_3
+#define USB_RX_GPIO_Port GPIOA
+#define LEDG_Pin GPIO_PIN_5
+#define LEDG_GPIO_Port GPIOA
+#define LEDR_Pin GPIO_PIN_6
+#define LEDR_GPIO_Port GPIOA
+#define LEDB_Pin GPIO_PIN_7
+#define LEDB_GPIO_Port GPIOA
+#define DASH7TX_Pin GPIO_PIN_9
+#define DASH7TX_GPIO_Port GPIOA
+#define DASH7RX_Pin GPIO_PIN_10
+#define DASH7RX_GPIO_Port GPIOA
+#define IPIR_IBAR_Pin GPIO_PIN_11
+#define IPIR_IBAR_GPIO_Port GPIOA
+#define RSTNFC_RBNO_Pin GPIO_PIN_12
+#define RSTNFC_RBNO_GPIO_Port GPIOA
+#define INFC_IBNO_Pin GPIO_PIN_13
+#define INFC_IBNO_GPIO_Port GPIOA
+#define VNFC_Pin GPIO_PIN_15
+#define VNFC_GPIO_Port GPIOA
 
 /* Private define ------------------------------------------------------------*/
 
