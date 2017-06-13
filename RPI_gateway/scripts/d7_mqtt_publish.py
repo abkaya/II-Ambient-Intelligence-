@@ -20,6 +20,10 @@ def received_command_callback(cmd):
     print(data)
     if data[0]==199:
         publish_magnetometer(data)
+    if (data[0] == 0 and data[1] == 19):
+        publish_altitude(data)
+    if (data[0] == 42 and data[1] == 42):
+        publish_localization(data)
     # mockup switch case, using dictionaries
     # options[data[1]](data)
 
@@ -38,6 +42,16 @@ def publish_magnetometer(data):
     publish.single("sensordata/magnetometerX", str(x), hostname="localhost")
     publish.single("sensordata/magnetometerY", str(y), hostname="localhost")
     publish.single("sensordata/magnetometerZ", str(z), hostname="localhost")
+
+
+# publish altitude in meters
+# 3rd floor : within range [28;34]
+def publish_altitude(data):
+    publish.single("mobilenode/altitude",data[3],hostname="localhost")
+
+def publish_localization(data):
+    publish.single("d7node/localization", data, hostname="localhost")
+
 
 
 def is_twos_negative(val):
