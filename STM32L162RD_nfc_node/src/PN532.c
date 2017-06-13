@@ -1,10 +1,9 @@
 /*
  * PN532.c
  *
- *  Created on: Jun 12, 2017
- *      Author: clnx
+ *  Created on: 20 Apr 2017
+ *      Author: Fifth
  */
-
 #include "PN532.h"
 
 void setI2CInterface_PN532(I2C_HandleTypeDef *hi2c)
@@ -125,11 +124,13 @@ uint8_t setPassiveActivationRetries(uint8_t maxRetries)
 // ISO14443A functions
 /*!
     Waits for an ISO14443A target to enter the field
+
     @param  cardBaudRate  Baud rate of the card
     @param  uid           Pointer to the array that will be populated
                           with the card's UID (up to 7 bytes)
     @param  uidLength     Pointer to the variable that will hold the
                           length of the card's UID.
+
     @returns 1 if everything executed properly, 0 for an error
 */
 /**************************************************************************/
@@ -156,6 +157,7 @@ uint8_t readPassiveTargetID(uint8_t cardbaudrate, uint8_t * uid, uint8_t * uidLe
 	// check some basic stuff
 
 	/* ISO14443A card response should be in the following format:
+
 	byte            Description
 	-------------   ------------------------------------------
 	b0..6           Frame header and preamble
@@ -185,6 +187,7 @@ uint8_t readPassiveTargetID(uint8_t cardbaudrate, uint8_t * uid, uint8_t * uidLe
 }//timeout 0 means no timeout - will block forever.
 /*!
     @brief  Exchanges an APDU with the currently inlisted peer
+
     @param  send            Pointer to data to send
     @param  sendLength      Length of the data to send
     @param  response        Pointer to response data
@@ -333,6 +336,7 @@ uint8_t mifareclassic_IsTrailerBlock (uint32_t uiBlock)
     Tries to authenticate a block of memory on a MIFARE card using the
     INDATAEXCHANGE command.  See section 7.3.8 of the PN532 User Manual
     for more information on sending MIFARE and other commands.
+
     @param  uid           Pointer to a byte array containing the card UID
     @param  uidLen        The length (in bytes) of the card's UID (Should
                           be 4 for MIFARE Classic)
@@ -342,6 +346,7 @@ uint8_t mifareclassic_IsTrailerBlock (uint32_t uiBlock)
                           (0 = MIFARE_CMD_AUTH_A, 1 = MIFARE_CMD_AUTH_B)
     @param  keyData       Pointer to a byte array containing the 6 byte
                           key value
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareclassic_AuthenticateBlock (uint8_t * uid, uint8_t uidLen, uint32_t blockNumber, uint8_t keyNumber, uint8_t * keyData)
@@ -384,10 +389,12 @@ uint8_t mifareclassic_AuthenticateBlock (uint8_t * uid, uint8_t uidLen, uint32_t
 /*!
     Tries to read an entire 16-byte data block at the specified block
     address.
+
     @param  blockNumber   The block number to authenticate.  (0..63 for
                           1KB cards, and 0..255 for 4KB cards).
     @param  data          Pointer to the byte array that will hold the
                           retrieved data (if any)
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareclassic_ReadDataBlock (uint8_t blockNumber, uint8_t * data)
@@ -422,9 +429,11 @@ uint8_t mifareclassic_ReadDataBlock (uint8_t blockNumber, uint8_t * data)
 /*!
     Tries to write an entire 16-byte data block at the specified block
     address.
+
     @param  blockNumber   The block number to authenticate.  (0..63 for
                           1KB cards, and 0..255 for 4KB cards).
     @param  data          The byte array that contains the data to write.
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareclassic_WriteDataBlock (uint8_t blockNumber, uint8_t * data)
@@ -449,6 +458,7 @@ uint8_t mifareclassic_WriteDataBlock (uint8_t blockNumber, uint8_t * data)
 }
 /*!
     Formats a Mifare Classic card to store NDEF Records
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareclassic_FormatNDEF (void)
@@ -473,15 +483,18 @@ uint8_t mifareclassic_FormatNDEF (void)
 }
 /*!
     Writes an NDEF URI Record to the specified sector (1..15)
+
     Note that this function assumes that the Mifare Classic card is
     already formatted to work as an "NFC Forum Tag" and uses a MAD1
     file system.  You can use the NXP TagWriter app on Android to
     properly format cards for this.
+
     @param  sectorNumber  The sector that the URI record should be written
                           to (can be 1..15 for a 1K card)
     @param  uriIdentifier The uri identifier code (0 = none, 0x01 =
                           "http://www.", etc.)
     @param  url           The uri text to write (max 38 characters).
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareclassic_WriteNDEFURI (uint8_t sectorNumber, uint8_t uriIdentifier, const char * url)
@@ -557,6 +570,7 @@ uint8_t mifareclassic_WriteNDEFURI (uint8_t sectorNumber, uint8_t uriIdentifier,
 // Mifare Ultralight functions
 /*!
     Tries to read an entire 4-byte page at the specified address.
+
     @param  page        The page number (0..63 in most cases)
     @param  buffer      Pointer to the byte array that will hold the
                         retrieved data (if any)
@@ -603,9 +617,11 @@ uint8_t mifareultralight_ReadPage (uint8_t page, uint8_t * buffer)
 /*!
     Tries to write an entire 4-byte page at the specified block
     address.
+
     @param  page          The page number to write.  (0..63 for most cases)
     @param  data          The byte array that contains the data to write.
                           Should be exactly 4 bytes long.
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t mifareultralight_WritePage (uint8_t page, uint8_t * data)
@@ -638,6 +654,7 @@ uint8_t mifareultralight_WritePage (uint8_t page, uint8_t * data)
 // NTAG2xx functions
 /*!
     Tries to read an entire 4-byte page at the specified address.
+
     @param  page        The page number (0..63 in most cases)
     @param  buffer      Pointer to the byte array that will hold the
                         retrieved data (if any)
@@ -690,9 +707,11 @@ uint8_t ntag2xx_ReadPage (uint8_t page, uint8_t * buffer)
 /*!
     Tries to write an entire 4-byte page at the specified block
     address.
+
     @param  page          The page number to write.  (0..63 for most cases)
     @param  data          The byte array that contains the data to write.
                           Should be exactly 4 bytes long.
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t ntag2xx_WritePage (uint8_t page, uint8_t * data)
@@ -731,12 +750,15 @@ uint8_t ntag2xx_WritePage (uint8_t page, uint8_t * data)
 }
 /*!
     Writes an NDEF URI Record starting at the specified page (4..nn)
+
     Note that this function assumes that the NTAG2xx card is
     already formatted to work as an "NFC Forum Tag".
+
     @param  uriIdentifier The uri identifier code (0 = none, 0x01 =
                           "http://www.", etc.)
     @param  url           The uri text to write (null-terminated string).
     @param  dataLen       The size of the data area for overflow checks.
+
     @returns 1 if everything executed properly, 0 for an error
 */
 uint8_t ntag2xx_WriteNDEFURI (uint8_t uriIdentifier, char * url, uint8_t dataLen)
@@ -834,6 +856,7 @@ uint8_t ntag2xx_WriteNDEFURI (uint8_t uriIdentifier, char * url, uint8_t dataLen
 // Low level communication functions that handle both SPI and I2C.
 /*!
     @brief  Reads n bytes of data from the PN532 via SPI or I2C.
+
     @param  buff      Pointer to the buffer where data will be written
     @param  n         Number of bytes to be read
 */
@@ -847,6 +870,7 @@ void readdata(uint8_t buff[], uint8_t n)
 /*!
     @brief  Writes a command to the PN532, automatically inserting the
             preamble and required frame details (checksum, len, etc.)
+
     @param  cmd       Pointer to the command buffer
     @param  cmdlen    Command length in bytes
 */
@@ -896,6 +920,7 @@ uint8_t isready()
 }
 /*!
     @brief  Waits until the PN532 is ready.
+
     @param  timeout   Timeout before giving up
 */
 uint8_t waitready(uint16_t timeout)
@@ -931,4 +956,3 @@ void setUART_PN532(UART_HandleTypeDef *huart)
 {
 	huartP=huart;
 	}
-
