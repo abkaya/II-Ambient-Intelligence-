@@ -25,7 +25,7 @@ def received_command_callback(cmd):
     if (data[0] == 42 and data[1] == 42):
         publish_localization(data)
     if (data[0] == 4 and data[1] == 115 and data[3] == 187):
-        publish_nfc()
+        publish_nfc(data)
     # mockup switch case, using dictionaries
     # options[data[1]](data)
 
