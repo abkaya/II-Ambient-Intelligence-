@@ -19,7 +19,29 @@
 #include "em_cmu.h"
 #include "em_assert.h"
 #include <stdint.h>
+/*
+#include "bsp.h"
 
+void Delay(uint32_t dlyTicks);
+volatile uint32_t msTicks;
+
+
+
+void Delay(uint32_t dlyTicks);
+
+void SysTick_Handler(void)
+{
+  msTicks++;
+}
+
+void Delay(uint32_t dlyTicks)
+{
+  uint32_t curTicks;
+
+  curTicks = msTicks;
+  while ((msTicks - curTicks) < dlyTicks) ;
+}
+*/
 /**************************************************************************//**
  * @brief  Main function
  *****************************************************************************/
@@ -27,6 +49,8 @@ int main(void)
 {
   /* Chip errata */
   CHIP_Init();
+
+  Delay(5000);
 
   EMU_EnterEM4();
 

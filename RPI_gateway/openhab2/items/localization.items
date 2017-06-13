@@ -1,0 +1,1 @@
+String room_name "Room [%s]" {mqtt="<[opehabmqtt:/rpi/localization:state:default]"}

@@ -1,0 +1,1 @@
+Thing exec:command:readtemp [ command="cat /sys/class/thermal/thermal_zone0/temp", interval=5, timeout=60 ]
