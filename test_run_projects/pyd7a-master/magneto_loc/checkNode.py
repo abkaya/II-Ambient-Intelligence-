@@ -11,22 +11,27 @@ from d7a.system_files.uid import UidFile
 from modem.modem import Modem
 import time
 
-#Data
-mag_values = []
+# Variables
+mag_valueX = []
+mag_valueY = []
+mag_valueZ = []
 pitchs = []
 rolls = []
 yaws = []
 bars = []
 
+
 def received_command_callback(cmd):
     dataLocal = cmd.actions[0].operand.data
-    print dataLocal
-    # mag_values.append(int(format(dataLocal[0], '#010b') + format(dataLocal[1], '08b'),2))
-    # pitchs.append(int(format(dataLocal[2], '#010b') + format(dataLocal[3], '08b'), 2))
-    # rolls.append(int(format(dataLocal[4], '#010b') + format(dataLocal[5], '08b'), 2))
-    # yaws.append(int(format(dataLocal[6], '#010b') + format(dataLocal[7], '08b'), 2))
-    # bars.append(int(format(dataLocal[8], '#010b') + format(dataLocal[9], '08b'), 2))
-
+    dataHeader = int(format(dataLocal[0], '#010b'),0)
+    if(dataHeader == 42): # Only process data if first byte equals '42' (= data header for mobile node). This prevents conflicts with the NFC node
+          print "MagX: " + str(int(format(dataLocal[1], '#010b') + format(dataLocal[2], '08b'),2))
+          print "MagY: " + str(int(format(dataLocal[3], '#010b') + format(dataLocal[4], '08b'),2))
+          print "MagZ: " + str(int(format(dataLocal[5], '#010b') + format(dataLocal[6], '08b'),2))
+          print "Pitch: " + str(int(format(dataLocal[7], '#010b') + format(dataLocal[8], '08b'),2)/900)
+          print "Roll: " + str(int(format(dataLocal[9], '#010b') + format(dataLocal[10], '08b'), 2)/900)
+          print "Yaw: " + str(int(format(dataLocal[11], '#010b') + format(dataLocal[12], '08b'), 2)/900)
+          print 
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("-d", "--device", help="serial device /dev file modem",

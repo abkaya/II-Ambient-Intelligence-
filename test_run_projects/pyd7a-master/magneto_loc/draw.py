@@ -9,8 +9,8 @@ from matplotlib import pyplot
 import pylab
 from mpl_toolkits.mplot3d import Axes3D
 
-group_name = "Team-Cool"
-collection_name = "V-Blok"
+group_name = "Team-MetVier"
+collection_name = "V-Blok_mag_0"
 
 def drawNeighbours(trainSet,testSet):
     drawList = {}
@@ -19,16 +19,16 @@ def drawNeighbours(trainSet,testSet):
     for x in range(len(trainSet)):
         response = trainSet[x][-1].encode('ascii','ignore')
         if response in drawList:
-            drawList[response][0].append(trainSet[x][1])
-            drawList[response][1].append(trainSet[x][3])
-            drawList[response][2].append(trainSet[x][4])
+            drawList[response][0].append(trainSet[x][0])
+            drawList[response][1].append(trainSet[x][1])
+            drawList[response][2].append(trainSet[x][2])
         else:
             drawList[response] = [[],[],[]]
-            drawList[response][0].append(trainSet[x][1])
-            drawList[response][1].append(trainSet[x][3])
-            drawList[response][2].append(trainSet[x][4])
+            drawList[response][0].append(trainSet[x][0])
+            drawList[response][1].append(trainSet[x][1])
+            drawList[response][2].append(trainSet[x][2])
     
-    ax.scatter(testSet[1], testSet[3], testSet[4], label='Sample')
+    ax.scatter(testSet[0], testSet[1], testSet[2], label='Sample')
     for key, value in drawList.items():
         ax.scatter(value[0], value[1], value[2], label=key)
     
@@ -82,7 +82,7 @@ def main():
     trainSet = []
     for fi in d:
         finger = []
-        local = fi["room_name"] # + "_" + str(fi["boxid"])  + "_" + str(fi["fingerid"])
+        local = fi["room_name"]  + "_" + str(fi["boxid"]) + "_" + str(fi["fingerid"])
         RSSI_array = fi["RSSI"]
         for RSSI in RSSI_array:
             finger.append(int(RSSI["RSSI-Value"]))
@@ -90,11 +90,11 @@ def main():
         trainSet.append(finger)
     
 	# prepare data
-    testSet = [0, 80, 0, 55, 82, 0]
+    testSet = [176, 65448, 64890]
    
     # generate predictions
     predictions=[]
-    k = 15
+    k = 3
 
     neighbors = getNeighbors(trainSet, testSet, k)
     result = getResponse(neighbors)
