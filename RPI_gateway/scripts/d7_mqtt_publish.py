@@ -24,6 +24,8 @@ def received_command_callback(cmd):
         publish_altitude(data)
     if (data[0] == 42 and data[1] == 42):
         publish_localization(data)
+    if (data[0] == 4 and data[1] == 115 and data[3] == 187):
+
     # mockup switch case, using dictionaries
     # options[data[1]](data)
 
@@ -52,6 +54,8 @@ def publish_altitude(data):
 def publish_localization(data):
     publish.single("d7node/localization", data, hostname="localhost")
 
+def publish_nfc(data):
+    publish.single("nfcnode/tag", ('Abdil - {: % Y - % b - % d % H: % M: % S}'.format(datetime.datetime.now())), hostname="localhost")
 
 
 def is_twos_negative(val):
