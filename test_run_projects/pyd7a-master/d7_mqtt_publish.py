@@ -10,6 +10,7 @@ from d7a.sp.qos import QoS, ResponseMode
 from d7a.system_files.uid import UidFile
 from modem.modem import Modem
 import paho.mqtt.publish as publish
+import datetime
 
 
 def received_command_callback(cmd):
@@ -55,7 +56,7 @@ def publish_localization(data):
     publish.single("d7node/localization", data, hostname="localhost")
 
 def publish_nfc(data):
-    publish.single("nfcnode/tag", ('Abdil - {: % Y - % b - % d % H: % M: % S}'.format(datetime.datetime.now())), hostname="localhost")
+    publish.single("nfcnode/tag", ('Abdil {: %H:%M:%S %Y-%b-%d}'.format(datetime.datetime.now())), hostname="localhost")
 
 
 def is_twos_negative(val):
