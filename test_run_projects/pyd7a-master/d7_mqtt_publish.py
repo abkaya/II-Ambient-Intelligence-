@@ -49,8 +49,9 @@ def publish_magnetometer(data):
 
 # publish altitude in meters
 # 3rd floor : within range [28;34]
-def publish_altitude(data):
+def publish_alti_temp(data):
     publish.single("mobilenode/altitude",data[3],hostname="localhost")
+    publish.single("mobilenode/temperature", data[5], hostname="localhost")
 
 def publish_localization(data):
     publish.single("d7node/localization", data, hostname="localhost")
