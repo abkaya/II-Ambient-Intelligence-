@@ -66,7 +66,6 @@ int main(void) {
 
 	init_MPL3115A2(&hi2c1);
 
-
 	// 5:green, 6:red, 7:blue
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
@@ -87,15 +86,19 @@ int main(void) {
 		 }
 		 */
 
-		int alt[2];
-		alt[0] = 19;
-		alt[1] = (int)readAltitude_MPL3115A2()+58;
-		if (alt[0] != -1) {
+		int alt_temp[3];
+		alt_temp[0] = 19;
+		alt_temp[1] = (int) readAltitude_MPL3115A2() + 58;
+		alt_temp[2] = (int) parseTemp_MPL3115A();
+
+		if (alt_temp[0] != -1) {
 			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			uint8_t * alpCmd = getALP(alt);
+
+			uint8_t * alpCmd = getALP(alt_temp);
 			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
 			HAL_MAX_DELAY);
 			free(alpCmd);
+
 			HAL_Delay(100);
 			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			HAL_Delay(2000);

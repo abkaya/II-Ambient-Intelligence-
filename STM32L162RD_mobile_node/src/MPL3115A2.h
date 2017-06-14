@@ -79,5 +79,8 @@ void toggleOneShot_MPL3115A2();
 void setOverSampleRate_MPL3115A2(uint8_t sampleRate);
 double readAltitude_MPL3115A2();
 
+uint16_t Read_Temp_MPL3115A();
+double parseTemp_MPL3115A();
+
 
 #endif /* MPL3115A2_H_ */

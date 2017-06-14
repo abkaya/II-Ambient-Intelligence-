@@ -1,35 +1,35 @@
 /**
- ******************************************************************************
- * File Name          : main.c
- * Description        : Main program body
- ******************************************************************************
- *
- * COPYRIGHT(c) 2017 STMicroelectronics
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
- *   3. Neither the name of STMicroelectronics nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * File Name          : main.c
+  * Description        : Main program body
+  ******************************************************************************
+  *
+  * COPYRIGHT(c) 2017 STMicroelectronics
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
@@ -61,26 +61,63 @@ static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM6_Init(void);
 
-/* USER CODE BEGIN PFP */
-/* Private function prototypes -----------------------------------------------*/
-
 void getBin(int num, char *str);
 static void dataToHex(int data, int dataHex[]);
 uint8_t * getALP(int data[]);
 
-/* USER CODE END PFP */
+int main(void)
+{
 
-/* USER CODE BEGIN 0 */
 
-/* USER CODE END 0 */
+  HAL_Init();
 
-int main(void) {
-	HAL_Init();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_I2C1_Init();
+  MX_USART1_UART_Init();
+  MX_TIM6_Init();
 
-	/* Initialize all configured peripherals */
+  init_MPL3115A2(&hi2c1);
+  /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+  /* USER CODE END WHILE */
+
+  /* USER CODE BEGIN 3 */
+
+  }
+  /* USER CODE END 3 */
+
+}
+
+void SleepMode(void) {
+	GPIO_InitTypeDef GPIO_InitStruct;
+	/* Disable all GPIOs to reduce power */
+
+	/* Configure User push-button as external interrupt generator */
+	__HAL_RCC_GPIOC_CLK_ENABLE()
+	;
+
+	/* Suspend Tick increment to prevent wakeup by Systick interrupt.
+	 Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base) */
+	HAL_SuspendTick();
+	__HAL_RCC_PWR_CLK_ENABLE()
+	;
+	/* Request to enter SLEEP mode */
+	HAL_PWR_EnterSLEEPMode(0, PWR_SLEEPENTRY_WFI);
+
+
+	/* Resume Tick interrupt if disabled prior to sleep mode entry*/
+	HAL_ResumeTick();
+	/* Reinitialize GPIOs */
 	MX_GPIO_Init();
 	MX_I2C1_Init();
 	MX_USART1_UART_Init();
@@ -94,42 +131,43 @@ int main(void) {
 	init_MPL3115A2(&hi2c1);
 
 	// 5:green, 6:red, 7:blue
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-	//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
-	// essentially makes the RGB leds active low
-	while (1) {
+	/*
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+	 */
+	/* Reinitialize UART2 */
+}
 
-		/*for (i = 0; i < 3; i++) {
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	/**
+	 * This callback is automatically called by the HAL on timer UEV (Timer Update Event)
+	 * These are necessary periodic resets in order to make sure the program does
+	 * not crash when line of sight with the lighthouse is lost
+	 */
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+	if (htim->Instance == TIM6) {
+		/*int alt[2];
+		 alt[0] = 19;
+		 alt[1] = (int) readAltitude_MPL3115A2() + 58;
+		 if (alt[0] != -1) {
 		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-		 uint8_t * alpCmd = getALP(testD7);
+		 uint8_t * alpCmd = getALP(alt);
 		 HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
 		 HAL_MAX_DELAY);
 		 free(alpCmd);
 		 HAL_Delay(100);
 		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-		 HAL_Delay(4000);
-		 }
+		 //HAL_Delay(2000);
+		 *
 		 */
-
-		int alt[2];
-		alt[0] = 19;
-		alt[1] = (int) readAltitude_MPL3115A2() + 58;
-		if (alt[0] != -1) {
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			uint8_t * alpCmd = getALP(alt);
-			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
-			HAL_MAX_DELAY);
-			free(alpCmd);
-			HAL_Delay(100);
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			HAL_Delay(2000);
-		}
-		HAL_Delay(2000);
-
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		HAL_Delay(200);
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		HAL_TIM_Base_Start_IT(&htim6);
 	}
-	/* USER CODE END 3 */
+	//HAL_Delay(2000);
+	//SleepMode();
 }
 
 /** System Clock Configuration
@@ -146,10 +184,8 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSICalibrationValue = 0;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -160,12 +196,12 @@ void SystemClock_Config(void)
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -179,7 +215,7 @@ void SystemClock_Config(void)
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
   /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 1);
 }
 
 /* I2C1 init function */
@@ -209,20 +245,22 @@ static void MX_TIM6_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 65535;
+  htim6.Init.Prescaler = 2400;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 600;
+  htim6.Init.Period = 10000;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
     Error_Handler();
   }
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
+ HAL_NVIC_SetPriority(TIM6_IRQn, 0, 0);
+ HAL_NVIC_EnableIRQ(TIM6_IRQn);
 
 }
 
@@ -258,6 +296,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -493,6 +532,25 @@ uint8_t * getALP(int data[]) {
 	return ALPCommand;
 
 }
+
+#ifdef USE_FULL_ASSERT
+
+/**
+ * @brief Reports the name of the source file and the source line number
+ * where the assert_param error has occurred.
+ * @param file: pointer to the source file name
+ * @param line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	/* USER CODE BEGIN 6 */
+	/* User can add his own implementation to report the file name and line number,
+	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* USER CODE END 6 */
+
+}
+#endif
 
 #ifdef USE_FULL_ASSERT
 
