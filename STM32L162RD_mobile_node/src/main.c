@@ -67,12 +67,6 @@ int main(void) {
 	init_MPL3115A2(&hi2c1);
 
 
-	int i;
-	int testD7[3];
-	testD7[0] = 5;
-	testD7[1] = 6;
-	testD7[2] = 7;
-
 	// 5:green, 6:red, 7:blue
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);

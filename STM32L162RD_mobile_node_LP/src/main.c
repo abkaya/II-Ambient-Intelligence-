@@ -1,35 +1,35 @@
 /**
-  ******************************************************************************
-  * File Name          : main.c
-  * Description        : Main program body
-  ******************************************************************************
-  *
-  * COPYRIGHT(c) 2017 STMicroelectronics
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : main.c
+ * Description        : Main program body
+ ******************************************************************************
+ *
+ * COPYRIGHT(c) 2017 STMicroelectronics
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of STMicroelectronics nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32l1xx_hal.h"
@@ -74,78 +74,62 @@ uint8_t * getALP(int data[]);
 
 /* USER CODE END 0 */
 
-int main(void)
-{
+int main(void) {
+	HAL_Init();
 
-  /* USER CODE BEGIN 1 */
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE END 1 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_I2C1_Init();
+	MX_USART1_UART_Init();
+	MX_TIM6_Init();
 
-  /* MCU Configuration----------------------------------------------------------*/
+	/* USER CODE BEGIN 2 */
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* USER CODE END 2 */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Infinite loop */
+	init_MPL3115A2(&hi2c1);
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_USART1_UART_Init();
-  MX_TIM6_Init();
+	// 5:green, 6:red, 7:blue
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+	//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
+	// essentially makes the RGB leds active low
+	while (1) {
 
-  /* USER CODE BEGIN 2 */
+		/*for (i = 0; i < 3; i++) {
+		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		 uint8_t * alpCmd = getALP(testD7);
+		 HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
+		 HAL_MAX_DELAY);
+		 free(alpCmd);
+		 HAL_Delay(100);
+		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+		 HAL_Delay(4000);
+		 }
+		 */
 
-  /* USER CODE END 2 */
+		int alt[2];
+		alt[0] = 19;
+		alt[1] = (int) readAltitude_MPL3115A2() + 58;
+		if (alt[0] != -1) {
+			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+			uint8_t * alpCmd = getALP(alt);
+			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
+			HAL_MAX_DELAY);
+			free(alpCmd);
+			HAL_Delay(100);
+			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+			HAL_Delay(2000);
+		}
+		HAL_Delay(2000);
 
-  /* Infinite loop */
-  init_MPL3115A2(&hi2c1);
-
-
-  	int i;
-  	int testD7[3];
-  	testD7[0] = 5;
-  	testD7[1] = 6;
-  	testD7[2] = 7;
-
-  	// 5:green, 6:red, 7:blue
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-  	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-  	//Reset will light the leds! This is due to the GND pad on the PCB being replaced by a wire to 3.3V, which
-  	// essentially makes the RGB leds active low
-  	while (1) {
-
-  		/*for (i = 0; i < 3; i++) {
-  		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-  		 uint8_t * alpCmd = getALP(testD7);
-  		 HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
-  		 HAL_MAX_DELAY);
-  		 free(alpCmd);
-  		 HAL_Delay(100);
-  		 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-  		 HAL_Delay(4000);
-  		 }
-  		 */
-
-  		int alt[2];
-  		alt[0] = 19;
-  		alt[1] = (int)readAltitude_MPL3115A2()+58;
-  		if (alt[0] != -1) {
-  			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-  			uint8_t * alpCmd = getALP(alt);
-  			HAL_UART_Transmit(&huart1, (uint8_t*) alpCmd, sizeof(alpCmd),
-  			HAL_MAX_DELAY);
-  			free(alpCmd);
-  			HAL_Delay(100);
-  			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-  			HAL_Delay(2000);
-  		}
-  		HAL_Delay(2000);
-
-  	}
-  	/* USER CODE END 3 */
+	}
+	/* USER CODE END 3 */
 }
 
 /** System Clock Configuration
@@ -178,7 +162,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV16;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
