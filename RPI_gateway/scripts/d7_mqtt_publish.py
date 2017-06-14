@@ -57,8 +57,8 @@ def publish_localization(data):
     publish.single("d7node/localization", data, hostname="localhost")
 
 def publish_nfc(data):
-    publish.single("nfcnode/tag", ('Abdil at {: %H:%M:%S %Y-%b-%d}'.format(datetime.datetime.now())), hostname="localhost")
-
+    publish.single("nfcnode/tag",('Abdil'), hostname="localhost")
+    publish.single("nfcnode/tagDate", ('Abdil at {: %H:%M:%S %Y-%b-%d}'.format(datetime.datetime.now())), hostname="localhost")
 
 def is_twos_negative(val):
     constant = 1 << (15);
