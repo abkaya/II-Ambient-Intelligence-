@@ -25,10 +25,11 @@ def received_command_callback(cmd):
         publish_altitude(data)
     if (data[0] == 42 and data[1] == 42):
         publish_localization(data)
-    if (data[0] == 4 and data[1] == 115 and data[3] == 187):
+    if (data[0] == 4 and data[1] == 45 and data[3] == 137):
         publish_nfc(data)
     # mockup switch case, using dictionaries
     # options[data[1]](data)
+
 
 
 def publish_magnetometer(data):
